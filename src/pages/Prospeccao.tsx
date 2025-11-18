@@ -1,8 +1,8 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Upload, Download, MoreVertical, Trash2, Eye, UserPlus } from "lucide-react";
+import { Upload, Download, MoreVertical, Trash2, Eye, UserPlus, RefreshCw, Copy, Check } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import {
   Table,
@@ -18,6 +18,13 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import {
   Select,
   SelectContent,
@@ -51,7 +58,35 @@ const Prospeccao = () => {
   const [selectedRows, setSelectedRows] = useState<Set<string>>(new Set());
   const [pageSize, setPageSize] = useState("25");
   const [currentPage, setCurrentPage] = useState(1);
+  const [viewingDebtor, setViewingDebtor] = useState<Debtor | null>(null);
+  const [copiedId, setCopiedId] = useState<string | null>(null);
   const { toast } = useToast();
+
+  // Load data from localStorage on mount
+  useEffect(() => {
+    const savedDebtors = localStorage.getItem("prospeccao_debtors");
+    const savedMetadata = localStorage.getItem("prospeccao_metadata");
+    
+    if (savedDebtors) {
+      setDebtors(JSON.parse(savedDebtors));
+    }
+    if (savedMetadata) {
+      setMetadata(JSON.parse(savedMetadata));
+    }
+  }, []);
+
+  // Save data to localStorage whenever it changes
+  useEffect(() => {
+    if (debtors.length > 0) {
+      localStorage.setItem("prospeccao_debtors", JSON.stringify(debtors));
+    }
+  }, [debtors]);
+
+  useEffect(() => {
+    if (metadata) {
+      localStorage.setItem("prospeccao_metadata", JSON.stringify(metadata));
+    }
+  }, [metadata]);
 
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -80,16 +115,21 @@ const Prospeccao = () => {
     let dataStartIndex = 0;
     for (let i = 0; i < lines.length; i++) {
       const line = lines[i];
-      if (line.includes("Faixa de Valor Mínimo")) {
-        meta.faixaValorMinimo = line.split(":")[1]?.trim() || "";
-      } else if (line.includes("Estado:")) {
-        meta.estado = line.split(":")[1]?.trim() || "";
-      } else if (line.includes("Faixa de Valor Máximo")) {
-        meta.faixaValorMaximo = line.split(":")[1]?.trim() || "";
-      } else if (line.includes("Natureza da dívida")) {
-        meta.naturezaDivida = line.split(":")[1]?.trim() || "";
+      if (line.includes("Faixa de Valor Mínimo") || line.includes("Faixa de valor mínimo")) {
+        const parts = line.split(/[:;]/);
+        meta.faixaValorMinimo = parts[1]?.replace(/"/g, "").trim() || "";
+      } else if (line.includes("Faixa de Valor Máximo") || line.includes("Faixa de valor máximo")) {
+        const parts = line.split(/[:;]/);
+        meta.faixaValorMaximo = parts[1]?.replace(/"/g, "").trim() || "";
+      } else if (line.includes("Estado")) {
+        const parts = line.split(/[:;]/);
+        meta.estado = parts[1]?.replace(/"/g, "").trim() || "";
+      } else if (line.includes("Natureza da dívida") || line.includes("Natureza da divida")) {
+        const parts = line.split(/[:;]/);
+        meta.naturezaDivida = parts[1]?.replace(/"/g, "").trim() || "";
       } else if (line.includes("Data da pesquisa")) {
-        meta.dataPesquisa = line.split(":")[1]?.trim() || "";
+        const parts = line.split(/[:;]/);
+        meta.dataPesquisa = parts[1]?.replace(/"/g, "").trim() || "";
       } else if (line.includes("CPF/CNPJ")) {
         dataStartIndex = i + 1;
         break;
@@ -159,6 +199,33 @@ const Prospeccao = () => {
     setSelectedRows(new Set());
   };
 
+  const handleRefresh = () => {
+    setDebtors([]);
+    setMetadata(null);
+    setSelectedRows(new Set());
+    setCurrentPage(1);
+    localStorage.removeItem("prospeccao_debtors");
+    localStorage.removeItem("prospeccao_metadata");
+    toast({
+      title: "Dados removidos",
+      description: "A planilha importada foi removida com sucesso.",
+    });
+  };
+
+  const handleCopyCpfCnpj = (cpfCnpj: string, id: string) => {
+    navigator.clipboard.writeText(cpfCnpj);
+    setCopiedId(id);
+    toast({
+      title: "Copiado!",
+      description: "CPF/CNPJ copiado para a área de transferência.",
+    });
+    setTimeout(() => setCopiedId(null), 2000);
+  };
+
+  const handleViewDebtor = (debtor: Debtor) => {
+    setViewingDebtor(debtor);
+  };
+
   const totalPages = Math.ceil(debtors.length / parseInt(pageSize));
   const startIndex = (currentPage - 1) * parseInt(pageSize);
   const paginatedDebtors = debtors.slice(startIndex, startIndex + parseInt(pageSize));
@@ -191,6 +258,12 @@ const Prospeccao = () => {
               <Download className="mr-2 h-4 w-4" />
               Template
             </Button>
+            {debtors.length > 0 && (
+              <Button variant="outline" onClick={handleRefresh}>
+                <RefreshCw className="mr-2 h-4 w-4" />
+                Limpar Dados
+              </Button>
+            )}
           </div>
         </CardContent>
       </Card>
@@ -257,13 +330,13 @@ const Prospeccao = () => {
               <Table>
                 <TableHeader>
                   <TableRow className="bg-muted/50">
-                    <TableHead className="w-12">
+                     <TableHead className="w-12">
                       <Checkbox
                         checked={selectedRows.size === paginatedDebtors.length && paginatedDebtors.length > 0}
                         onCheckedChange={handleSelectAll}
                       />
                     </TableHead>
-                    <TableHead>CPF/CNPJ</TableHead>
+                    <TableHead className="w-[180px]">CPF/CNPJ</TableHead>
                     <TableHead>Nome</TableHead>
                     <TableHead>Nome Fantasia</TableHead>
                     <TableHead className="text-right">Valor Total</TableHead>
@@ -280,7 +353,20 @@ const Prospeccao = () => {
                           onCheckedChange={(checked) => handleSelectRow(debtor.id, checked as boolean)}
                         />
                       </TableCell>
-                      <TableCell className="font-mono text-sm">{debtor.cpfCnpj}</TableCell>
+                      <TableCell className="w-[180px]">
+                        <button
+                          onClick={() => handleCopyCpfCnpj(debtor.cpfCnpj, debtor.id)}
+                          className="font-mono text-sm whitespace-nowrap hover:text-primary transition-colors flex items-center gap-2 cursor-pointer"
+                          title="Clique para copiar"
+                        >
+                          {debtor.cpfCnpj}
+                          {copiedId === debtor.id ? (
+                            <Check className="h-3 w-3 text-green-600" />
+                          ) : (
+                            <Copy className="h-3 w-3 opacity-0 group-hover:opacity-100" />
+                          )}
+                        </button>
+                      </TableCell>
                       <TableCell className="font-medium">{debtor.nome}</TableCell>
                       <TableCell className="text-muted-foreground">{debtor.nomeFantasia || "-"}</TableCell>
                       <TableCell className="text-right font-medium">{debtor.valorTotal}</TableCell>
@@ -293,7 +379,7 @@ const Prospeccao = () => {
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
-                            <DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => handleViewDebtor(debtor)}>
                               <Eye className="mr-2 h-4 w-4" />
                               Visualizar
                             </DropdownMenuItem>
@@ -301,7 +387,16 @@ const Prospeccao = () => {
                               <UserPlus className="mr-2 h-4 w-4" />
                               Adicionar ao Clientes
                             </DropdownMenuItem>
-                            <DropdownMenuItem className="text-destructive">
+                            <DropdownMenuItem 
+                              className="text-destructive"
+                              onClick={() => {
+                                setDebtors(debtors.filter(d => d.id !== debtor.id));
+                                toast({
+                                  title: "Registro removido",
+                                  description: "O registro foi removido com sucesso.",
+                                });
+                              }}
+                            >
                               <Trash2 className="mr-2 h-4 w-4" />
                               Remover
                             </DropdownMenuItem>
@@ -356,6 +451,68 @@ const Prospeccao = () => {
           </CardContent>
         </Card>
       )}
+
+      {/* Dialog de Visualização */}
+      <Dialog open={!!viewingDebtor} onOpenChange={(open) => !open && setViewingDebtor(null)}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Detalhes do Devedor</DialogTitle>
+            <DialogDescription>
+              Informações completas do registro
+            </DialogDescription>
+          </DialogHeader>
+          {viewingDebtor && (
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">CPF/CNPJ</p>
+                  <p className="text-sm font-semibold text-foreground mt-1 font-mono">{viewingDebtor.cpfCnpj}</p>
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">Nome/Razão Social</p>
+                  <p className="text-sm font-semibold text-foreground mt-1">{viewingDebtor.nome}</p>
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">Nome Fantasia</p>
+                  <p className="text-sm font-semibold text-foreground mt-1">{viewingDebtor.nomeFantasia || "-"}</p>
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">Valor Total</p>
+                  <p className="text-sm font-semibold text-foreground mt-1">{viewingDebtor.valorTotal}</p>
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">Valor Dívida Selecionada</p>
+                  <p className="text-sm font-semibold text-accent mt-1">{viewingDebtor.valorDividaSelecionada}</p>
+                </div>
+              </div>
+              
+              {metadata && (
+                <div className="border-t pt-4 mt-4">
+                  <p className="text-sm font-medium text-muted-foreground mb-3">Metadados da Importação</p>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <p className="text-xs text-muted-foreground">Estado</p>
+                      <p className="text-sm font-medium">{metadata.estado}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-muted-foreground">Natureza da Dívida</p>
+                      <p className="text-sm font-medium">{metadata.naturezaDivida}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-muted-foreground">Valor Mínimo</p>
+                      <p className="text-sm font-medium">{metadata.faixaValorMinimo}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-muted-foreground">Valor Máximo</p>
+                      <p className="text-sm font-medium">{metadata.faixaValorMaximo}</p>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
