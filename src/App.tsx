@@ -8,6 +8,10 @@ import { AppSidebar } from "@/components/AppSidebar";
 import Home from "./pages/Home";
 import Prospeccao from "./pages/Prospeccao";
 import Clientes from "./pages/Clientes";
+import Contratos from "./pages/Contratos";
+import Servicos from "./pages/Servicos";
+import Funcionarios from "./pages/Funcionarios";
+import Carteira from "./pages/Carteira";
 import Configuracoes from "./pages/Configuracoes";
 import NotFound from "./pages/NotFound";
 
@@ -27,11 +31,15 @@ const App = () => (
                 <SidebarTrigger />
               </div>
               <Routes>
-                <Route path="/" element={<Home />} />
-                <Route path="/prospeccao" element={<Prospeccao />} />
-                <Route path="/clientes" element={<Clientes />} />
-                <Route path="/configuracoes" element={<Configuracoes />} />
-                <Route path="*" element={<NotFound />} />
+            <Route path="/" element={<Home />} />
+            <Route path="/prospeccao" element={<Prospeccao />} />
+            <Route path="/clientes" element={<Clientes />} />
+            <Route path="/contratos" element={<Contratos />} />
+            <Route path="/servicos" element={<Servicos />} />
+            <Route path="/funcionarios" element={<Funcionarios />} />
+            <Route path="/carteira" element={<Carteira />} />
+            <Route path="/configuracoes" element={<Configuracoes />} />
+            <Route path="*" element={<NotFound />} />
               </Routes>
             </main>
           </div>

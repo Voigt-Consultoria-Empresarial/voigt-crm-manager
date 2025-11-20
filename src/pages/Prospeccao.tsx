@@ -115,21 +115,26 @@ const Prospeccao = () => {
     let dataStartIndex = 0;
     for (let i = 0; i < lines.length; i++) {
       const line = lines[i];
-      if (line.includes("Faixa de Valor Mínimo") || line.includes("Faixa de valor mínimo")) {
-        const parts = line.split(/[:;]/);
-        meta.faixaValorMinimo = parts[1]?.replace(/"/g, "").trim() || "";
-      } else if (line.includes("Faixa de Valor Máximo") || line.includes("Faixa de valor máximo")) {
-        const parts = line.split(/[:;]/);
-        meta.faixaValorMaximo = parts[1]?.replace(/"/g, "").trim() || "";
-      } else if (line.includes("Estado")) {
-        const parts = line.split(/[:;]/);
-        meta.estado = parts[1]?.replace(/"/g, "").trim() || "";
-      } else if (line.includes("Natureza da dívida") || line.includes("Natureza da divida")) {
-        const parts = line.split(/[:;]/);
-        meta.naturezaDivida = parts[1]?.replace(/"/g, "").trim() || "";
+      
+      // Extract value after colon, removing quotes and extra spaces
+      const extractValue = (line: string): string => {
+        const colonIndex = line.indexOf(":");
+        if (colonIndex === -1) return "";
+        return line.substring(colonIndex + 1).replace(/"/g, "").trim();
+      };
+      
+      if (line.includes("Faixa de Valor Mínimo") || line.includes("Faixa de valor mínimo") || line.includes("Faixa de Valor M")) {
+        meta.faixaValorMinimo = extractValue(line);
+      } else if (line.includes("Faixa de Valor Máximo") || line.includes("Faixa de valor máximo") || line.includes("Faixa de Valor M")) {
+        if (!meta.faixaValorMinimo || line.toLowerCase().includes("máximo") || line.includes("M�ximo")) {
+          meta.faixaValorMaximo = extractValue(line);
+        }
+      } else if (line.includes("Estado:")) {
+        meta.estado = extractValue(line);
+      } else if (line.includes("Natureza da d") || line.includes("Natureza da divida")) {
+        meta.naturezaDivida = extractValue(line);
       } else if (line.includes("Data da pesquisa")) {
-        const parts = line.split(/[:;]/);
-        meta.dataPesquisa = parts[1]?.replace(/"/g, "").trim() || "";
+        meta.dataPesquisa = extractValue(line);
       } else if (line.includes("CPF/CNPJ")) {
         dataStartIndex = i + 1;
         break;
@@ -354,18 +359,18 @@ const Prospeccao = () => {
                         />
                       </TableCell>
                       <TableCell className="w-[180px]">
-                        <button
+                        <div
                           onClick={() => handleCopyCpfCnpj(debtor.cpfCnpj, debtor.id)}
-                          className="font-mono text-sm whitespace-nowrap hover:text-primary transition-colors flex items-center gap-2 cursor-pointer"
+                          className="font-mono text-sm whitespace-nowrap hover:text-primary transition-colors flex items-center gap-2 cursor-pointer group"
                           title="Clique para copiar"
                         >
                           {debtor.cpfCnpj}
                           {copiedId === debtor.id ? (
                             <Check className="h-3 w-3 text-green-600" />
                           ) : (
-                            <Copy className="h-3 w-3 opacity-0 group-hover:opacity-100" />
+                            <Copy className="h-3 w-3 opacity-50 group-hover:opacity-100" />
                           )}
-                        </button>
+                        </div>
                       </TableCell>
                       <TableCell className="font-medium">{debtor.nome}</TableCell>
                       <TableCell className="text-muted-foreground">{debtor.nomeFantasia || "-"}</TableCell>
