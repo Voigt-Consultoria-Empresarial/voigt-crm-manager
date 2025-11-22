@@ -40,6 +40,8 @@ interface Empresa {
   naturezaDivida: string;
   statusReceita: string;
   estagioNegociacao: string;
+  funcionarioId?: string;
+  funcionarioNome?: string;
   informacoesExtras: Record<string, any>;
   socios: Socio[];
   contratos: Contrato[];
@@ -162,7 +164,7 @@ const Clientes = () => {
                         )}
                       </div>
                     </TableCell>
-                    <TableCell className="font-mono text-sm">{empresa.cnpj}</TableCell>
+                    <TableCell className="font-mono text-sm whitespace-nowrap">{empresa.cnpj}</TableCell>
                     <TableCell>{empresa.uf}</TableCell>
                     <TableCell>
                       <Badge variant="outline">{empresa.naturezaDivida}</Badge>
