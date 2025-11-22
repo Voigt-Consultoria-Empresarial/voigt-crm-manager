@@ -61,6 +61,7 @@ const Prospeccao = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [viewingDebtor, setViewingDebtor] = useState<Debtor | null>(null);
   const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [clienteCnpjs, setClienteCnpjs] = useState<Set<string>>(new Set());
   const { toast } = useToast();
   const { funcionario } = useAuth();
 
@@ -68,12 +69,17 @@ const Prospeccao = () => {
   useEffect(() => {
     const savedDebtors = localStorage.getItem("prospeccao_debtors");
     const savedMetadata = localStorage.getItem("prospeccao_metadata");
+    const savedEmpresas = localStorage.getItem('clientes_empresas');
     
     if (savedDebtors) {
       setDebtors(JSON.parse(savedDebtors));
     }
     if (savedMetadata) {
       setMetadata(JSON.parse(savedMetadata));
+    }
+    if (savedEmpresas) {
+      const empresas = JSON.parse(savedEmpresas);
+      setClienteCnpjs(new Set(empresas.map((e: any) => e.cnpj)));
     }
   }, []);
 
@@ -427,17 +433,24 @@ const Prospeccao = () => {
                         />
                       </TableCell>
                       <TableCell className="w-[180px]">
-                        <div
-                          onClick={() => handleCopyCpfCnpj(debtor.cpfCnpj, debtor.id)}
-                          className="font-mono text-sm whitespace-nowrap hover:text-primary transition-colors flex items-center gap-2 cursor-pointer group"
-                          title="Clique para copiar"
-                        >
-                          {debtor.cpfCnpj}
-                          {copiedId === debtor.id ? (
-                            <Check className="h-3 w-3 text-green-600" />
-                          ) : (
-                            <Copy className="h-3 w-3 opacity-50 group-hover:opacity-100" />
+                        <div className="space-y-1">
+                          {clienteCnpjs.has(debtor.cpfCnpj) && (
+                            <Badge className="bg-yellow-400 text-black hover:bg-yellow-500 text-xs px-2 py-0">
+                              Cliente
+                            </Badge>
                           )}
+                          <div
+                            onClick={() => handleCopyCpfCnpj(debtor.cpfCnpj, debtor.id)}
+                            className="font-mono text-sm whitespace-nowrap hover:text-primary transition-colors flex items-center gap-2 cursor-pointer group"
+                            title="Clique para copiar"
+                          >
+                            {debtor.cpfCnpj}
+                            {copiedId === debtor.id ? (
+                              <Check className="h-3 w-3 text-green-600" />
+                            ) : (
+                              <Copy className="h-3 w-3 opacity-50 group-hover:opacity-100" />
+                            )}
+                          </div>
                         </div>
                       </TableCell>
                       <TableCell className="font-medium">{debtor.nome}</TableCell>
