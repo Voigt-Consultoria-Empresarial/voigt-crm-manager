@@ -224,6 +224,24 @@ const Clientes = () => {
                 </TabsList>
 
                 <TabsContent value="geral" className="space-y-4">
+                  {selectedEmpresa.informacoesExtras?.adicionadoPor && (
+                    <Card className="bg-muted/50 border-border">
+                      <CardHeader className="pb-3">
+                        <CardTitle className="text-sm flex items-center gap-2">
+                          <UserCircle className="h-4 w-4" />
+                          Adicionado por
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent className="space-y-1">
+                        <p className="text-foreground font-medium">
+                          {selectedEmpresa.informacoesExtras.adicionadoPor.funcionarioNome}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          {selectedEmpresa.informacoesExtras.adicionadoPor.funcionarioCargo}
+                        </p>
+                      </CardContent>
+                    </Card>
+                  )}
                   <div className="grid grid-cols-2 gap-4">
                     <div>
                       <label className="text-sm font-medium text-muted-foreground">Razão Social</label>
