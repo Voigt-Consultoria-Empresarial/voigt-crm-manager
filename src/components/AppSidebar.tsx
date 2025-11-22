@@ -1,7 +1,9 @@
-import { Home, Users, FileText, Settings, FileStack, Briefcase, UserCog, FolderKanban } from "lucide-react";
+import { Home, Users, FileText, Settings, FileStack, Briefcase, UserCog, FolderKanban, LogOut } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import logoVoigt from "@/assets/logo-voigt.png";
+import { useAuth } from "@/contexts/AuthContext";
+import { Button } from "@/components/ui/button";
 
 import {
   Sidebar,
@@ -28,7 +30,14 @@ const menuItems = [
 export function AppSidebar() {
   const { state } = useSidebar();
   const location = useLocation();
+  const navigate = useNavigate();
+  const { logout, funcionario } = useAuth();
   const isCollapsed = state === "collapsed";
+
+  const handleLogout = () => {
+    logout();
+    navigate('/auth');
+  };
 
   return (
     <Sidebar collapsible="icon" className="border-r border-sidebar-border">
@@ -65,7 +74,22 @@ export function AppSidebar() {
       </SidebarContent>
 
       <SidebarFooter className="border-t border-sidebar-border p-4">
-        <p className={`text-xs text-sidebar-foreground/60 text-center transition-all ${isCollapsed ? 'hidden' : 'block'}`}>
+        {!isCollapsed && funcionario && (
+          <div className="mb-3 pb-3 border-b border-sidebar-border">
+            <p className="text-xs font-medium text-sidebar-foreground">{funcionario.nome}</p>
+            <p className="text-xs text-sidebar-foreground/60">{funcionario.cargo}</p>
+          </div>
+        )}
+        <Button 
+          variant="ghost" 
+          size={isCollapsed ? "icon" : "sm"}
+          onClick={handleLogout}
+          className="w-full justify-start text-sidebar-foreground hover:bg-sidebar-accent"
+        >
+          <LogOut className="h-4 w-4" />
+          {!isCollapsed && <span className="ml-2">Sair</span>}
+        </Button>
+        <p className={`text-xs text-sidebar-foreground/60 text-center transition-all mt-3 ${isCollapsed ? 'hidden' : 'block'}`}>
           © 2025 Voigt Consultoria
         </p>
       </SidebarFooter>

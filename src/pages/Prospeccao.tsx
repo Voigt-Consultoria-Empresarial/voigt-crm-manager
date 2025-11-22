@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Upload, Download, MoreVertical, Trash2, Eye, UserPlus, RefreshCw, Copy, Check } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { useAuth } from "@/contexts/AuthContext";
 import {
   Table,
   TableBody,
@@ -61,6 +62,7 @@ const Prospeccao = () => {
   const [viewingDebtor, setViewingDebtor] = useState<Debtor | null>(null);
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const { toast } = useToast();
+  const { funcionario } = useAuth();
 
   // Load data from localStorage on mount
   useEffect(() => {
@@ -213,9 +215,16 @@ const Prospeccao = () => {
       naturezaDivida: metadata?.naturezaDivida || '',
       statusReceita: 'pendente',
       estagioNegociacao: 'prospeccao',
+      funcionarioId: funcionario?.id || '',
+      funcionarioNome: funcionario?.nome || '',
       informacoesExtras: {
         origem: 'importacao_pgfn',
         dataImportacao: new Date().toISOString(),
+        adicionadoPor: {
+          funcionarioId: funcionario?.id || '',
+          funcionarioNome: funcionario?.nome || '',
+          funcionarioCargo: funcionario?.cargo || ''
+        },
         metadados: metadata ? {
           faixaValorMinimo: metadata.faixaValorMinimo,
           faixaValorMaximo: metadata.faixaValorMaximo,
