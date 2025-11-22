@@ -196,11 +196,70 @@ const Prospeccao = () => {
     });
   };
 
+  const convertDebtorToEmpresa = (debtor: Debtor) => {
+    // Parse valores removendo formatação
+    const parseValue = (value: string): number => {
+      return parseFloat(value.replace(/[^\d,.-]/g, '').replace(',', '.')) || 0;
+    };
+
+    const empresa = {
+      id: debtor.id,
+      razaoSocial: debtor.nome,
+      nomeFantasia: debtor.nomeFantasia || debtor.nome,
+      cnpj: debtor.cpfCnpj,
+      uf: metadata?.estado || '',
+      valorTotalDivida: parseValue(debtor.valorTotal),
+      valorDividaSelecionada: parseValue(debtor.valorDividaSelecionada),
+      naturezaDivida: metadata?.naturezaDivida || '',
+      statusReceita: 'pendente',
+      estagioNegociacao: 'prospeccao',
+      informacoesExtras: {
+        origem: 'importacao_pgfn',
+        dataImportacao: new Date().toISOString(),
+        metadados: metadata ? {
+          faixaValorMinimo: metadata.faixaValorMinimo,
+          faixaValorMaximo: metadata.faixaValorMaximo,
+          dataPesquisa: metadata.dataPesquisa,
+        } : {}
+      },
+      socios: [],
+      contratos: [],
+      dataConversao: new Date().toISOString()
+    };
+
+    return empresa;
+  };
+
   const handleBulkAddToClients = () => {
+    const selectedDebtors = debtors.filter(d => selectedRows.has(d.id));
+    const empresasToAdd = selectedDebtors.map(convertDebtorToEmpresa);
+
+    // Carregar empresas existentes
+    const savedEmpresas = localStorage.getItem('clientes_empresas');
+    const existingEmpresas = savedEmpresas ? JSON.parse(savedEmpresas) : [];
+
+    // Filtrar duplicados por CNPJ
+    const existingCnpjs = new Set(existingEmpresas.map((e: any) => e.cnpj));
+    const newEmpresas = empresasToAdd.filter(e => !existingCnpjs.has(e.cnpj));
+
+    if (newEmpresas.length === 0) {
+      toast({
+        title: "Nenhum novo cliente",
+        description: "Todas as empresas selecionadas já estão cadastradas.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    // Adicionar novas empresas
+    const updatedEmpresas = [...existingEmpresas, ...newEmpresas];
+    localStorage.setItem('clientes_empresas', JSON.stringify(updatedEmpresas));
+
     toast({
       title: "Adicionado aos clientes",
-      description: `${selectedRows.size} registro(s) adicionado(s) aos clientes.`,
+      description: `${newEmpresas.length} empresa(s) adicionada(s) aos clientes.`,
     });
+    
     setSelectedRows(new Set());
   };
 
@@ -388,9 +447,35 @@ const Prospeccao = () => {
                               <Eye className="mr-2 h-4 w-4" />
                               Visualizar
                             </DropdownMenuItem>
-                            <DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => {
+                              const empresa = convertDebtorToEmpresa(debtor);
+                              
+                              // Carregar empresas existentes
+                              const savedEmpresas = localStorage.getItem('clientes_empresas');
+                              const existingEmpresas = savedEmpresas ? JSON.parse(savedEmpresas) : [];
+                              
+                              // Verificar duplicado
+                              const exists = existingEmpresas.some((e: any) => e.cnpj === empresa.cnpj);
+                              if (exists) {
+                                toast({
+                                  title: "Cliente já existe",
+                                  description: "Esta empresa já está cadastrada nos clientes.",
+                                  variant: "destructive"
+                                });
+                                return;
+                              }
+                              
+                              // Adicionar nova empresa
+                              const updatedEmpresas = [...existingEmpresas, empresa];
+                              localStorage.setItem('clientes_empresas', JSON.stringify(updatedEmpresas));
+                              
+                              toast({
+                                title: "Adicionado aos clientes",
+                                description: "Empresa adicionada com sucesso.",
+                              });
+                            }}>
                               <UserPlus className="mr-2 h-4 w-4" />
-                              Adicionar ao Clientes
+                              Adicionar aos Clientes
                             </DropdownMenuItem>
                             <DropdownMenuItem 
                               className="text-destructive"
