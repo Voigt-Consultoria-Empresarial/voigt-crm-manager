@@ -61,26 +61,50 @@ interface QSA {
   qual_rep_legal?: string;
 }
 
+interface AtividadeEconomica {
+  code: string;
+  text: string;
+}
+
+interface Simples {
+  optante: boolean;
+  data_opcao?: string;
+  data_exclusao?: string;
+  ultima_atualizacao?: string;
+}
+
 interface ReceitaWSData {
-  nome: string;
-  fantasia: string;
+  status: string;
+  message?: string;
+  ultima_atualizacao?: string;
   cnpj: string;
-  abertura: string;
-  situacao: string;
   tipo: string;
   porte: string;
+  nome: string;
+  fantasia: string;
+  abertura: string;
+  atividade_principal?: AtividadeEconomica[];
+  atividades_secundarias?: AtividadeEconomica[];
   natureza_juridica: string;
   logradouro: string;
   numero: string;
   complemento: string;
-  municipio: string;
-  bairro: string;
-  uf: string;
   cep: string;
+  bairro: string;
+  municipio: string;
+  uf: string;
   email: string;
   telefone: string;
+  efr?: string;
+  situacao: string;
+  data_situacao?: string;
+  motivo_situacao?: string;
+  situacao_especial?: string;
+  data_situacao_especial?: string;
   capital_social: string;
   qsa: QSA[];
+  simples?: Simples;
+  simei?: Simples;
 }
 
 const Prospeccao = () => {
@@ -343,10 +367,16 @@ const Prospeccao = () => {
       // Remover caracteres especiais do CNPJ
       const cnpjLimpo = debtor.cpfCnpj.replace(/[^\d]/g, '');
       
-      const response = await fetch(`https://receitaws.com.br/v1/cnpj/${cnpjLimpo}`);
+      // Tentar buscar dados da ReceitaWS
+      const response = await fetch(`https://receitaws.com.br/v1/cnpj/${cnpjLimpo}`, {
+        method: 'GET',
+        headers: {
+          'Accept': 'application/json',
+        },
+      });
       
       if (!response.ok) {
-        throw new Error('Erro ao buscar dados da Receita Federal');
+        throw new Error(`HTTP error! status: ${response.status}`);
       }
       
       const data = await response.json();
@@ -358,11 +388,20 @@ const Prospeccao = () => {
       setReceitaData(data);
     } catch (error) {
       console.error('Erro ao buscar dados da ReceitaWS:', error);
+      
+      // Verificar se é erro de CORS
+      const isCorsError = error instanceof TypeError && error.message === 'Failed to fetch';
+      
       toast({
-        title: "Erro ao buscar dados",
-        description: "Não foi possível consultar os dados da Receita Federal.",
-        variant: "destructive"
+        title: "Erro ao consultar Receita Federal",
+        description: isCorsError 
+          ? "A API ReceitaWS bloqueia requisições diretas do navegador (CORS). Recomendamos habilitar o Lovable Cloud para criar um proxy." 
+          : "Não foi possível consultar os dados. Tente novamente mais tarde.",
+        variant: "destructive",
+        duration: 6000,
       });
+      
+      setLoadingReceita(false);
     } finally {
       setLoadingReceita(false);
     }
@@ -711,7 +750,14 @@ const Prospeccao = () => {
                     <div className="grid grid-cols-2 gap-4">
                       <div>
                         <p className="text-xs text-muted-foreground">Situação</p>
-                        <p className="text-sm font-medium">{receitaData.situacao}</p>
+                        <div className="space-y-0.5">
+                          <p className="text-sm font-medium">{receitaData.situacao}</p>
+                          {receitaData.data_situacao && (
+                            <p className="text-xs text-muted-foreground">
+                              Desde {receitaData.data_situacao}
+                            </p>
+                          )}
+                        </div>
                       </div>
                       <div>
                         <p className="text-xs text-muted-foreground">Data de Abertura</p>
@@ -733,8 +779,53 @@ const Prospeccao = () => {
                         <p className="text-xs text-muted-foreground">Capital Social</p>
                         <p className="text-sm font-medium">{receitaData.capital_social}</p>
                       </div>
+                      {receitaData.simples && (
+                        <div>
+                          <p className="text-xs text-muted-foreground">Simples Nacional</p>
+                          <p className="text-sm font-medium">
+                            {receitaData.simples.optante ? "Sim" : "Não"}
+                          </p>
+                        </div>
+                      )}
+                      {receitaData.simei && (
+                        <div>
+                          <p className="text-xs text-muted-foreground">SIMEI</p>
+                          <p className="text-sm font-medium">
+                            {receitaData.simei.optante ? "Sim" : "Não"}
+                          </p>
+                        </div>
+                      )}
                     </div>
                   </div>
+
+                  {/* Atividades Econômicas */}
+                  {receitaData.atividade_principal && receitaData.atividade_principal.length > 0 && (
+                    <div className="border-t pt-4 space-y-4">
+                      <h3 className="text-sm font-semibold text-foreground">Atividades Econômicas</h3>
+                      <div className="space-y-3">
+                        <div>
+                          <p className="text-xs text-muted-foreground mb-1">Atividade Principal</p>
+                          {receitaData.atividade_principal.map((ativ, idx) => (
+                            <p key={idx} className="text-sm font-medium">
+                              {ativ.code} - {ativ.text}
+                            </p>
+                          ))}
+                        </div>
+                        {receitaData.atividades_secundarias && receitaData.atividades_secundarias.length > 0 && (
+                          <div>
+                            <p className="text-xs text-muted-foreground mb-1">Atividades Secundárias</p>
+                            <div className="space-y-1">
+                              {receitaData.atividades_secundarias.map((ativ, idx) => (
+                                <p key={idx} className="text-sm">
+                                  {ativ.code} - {ativ.text}
+                                </p>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
 
                   {/* Endereço */}
                   <div className="border-t pt-4 space-y-4">

@@ -269,9 +269,9 @@ const Clientes = () => {
                     </div>
                     <div>
                       <label className="text-sm font-medium text-muted-foreground">Natureza da Dívida</label>
-                      <p className="text-foreground">
+                      <div className="text-foreground">
                         <Badge variant="outline">{selectedEmpresa.naturezaDivida}</Badge>
-                      </p>
+                      </div>
                     </div>
                     <div>
                       <label className="text-sm font-medium text-muted-foreground">Status na Receita</label>
@@ -279,11 +279,11 @@ const Clientes = () => {
                     </div>
                     <div className="col-span-2">
                       <label className="text-sm font-medium text-muted-foreground">Estágio de Negociação</label>
-                      <p className="text-foreground">
+                      <div className="text-foreground">
                         <Badge variant={getStatusBadge(selectedEmpresa.estagioNegociacao)}>
                           {selectedEmpresa.estagioNegociacao}
                         </Badge>
-                      </p>
+                      </div>
                     </div>
                   </div>
                 </TabsContent>
