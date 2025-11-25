@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Upload, Download, MoreVertical, Trash2, Eye, UserPlus, RefreshCw, Copy, Check } from "lucide-react";
+import { Upload, Download, MoreVertical, Trash2, Eye, UserPlus, RefreshCw, Copy, Check, Phone, MessageCircle, Loader2, Building2, User } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/contexts/AuthContext";
 import {
@@ -53,6 +53,36 @@ interface Metadata {
   dataPesquisa: string;
 }
 
+interface QSA {
+  nome: string;
+  qual: string;
+  pais_origem?: string;
+  nome_rep_legal?: string;
+  qual_rep_legal?: string;
+}
+
+interface ReceitaWSData {
+  nome: string;
+  fantasia: string;
+  cnpj: string;
+  abertura: string;
+  situacao: string;
+  tipo: string;
+  porte: string;
+  natureza_juridica: string;
+  logradouro: string;
+  numero: string;
+  complemento: string;
+  municipio: string;
+  bairro: string;
+  uf: string;
+  cep: string;
+  email: string;
+  telefone: string;
+  capital_social: string;
+  qsa: QSA[];
+}
+
 const Prospeccao = () => {
   const [debtors, setDebtors] = useState<Debtor[]>([]);
   const [metadata, setMetadata] = useState<Metadata | null>(null);
@@ -62,6 +92,9 @@ const Prospeccao = () => {
   const [viewingDebtor, setViewingDebtor] = useState<Debtor | null>(null);
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [clienteCnpjs, setClienteCnpjs] = useState<Set<string>>(new Set());
+  const [receitaData, setReceitaData] = useState<ReceitaWSData | null>(null);
+  const [loadingReceita, setLoadingReceita] = useState(false);
+  const [copiedPhone, setCopiedPhone] = useState<string | null>(null);
   const { toast } = useToast();
   const { funcionario } = useAuth();
 
@@ -301,8 +334,54 @@ const Prospeccao = () => {
     setTimeout(() => setCopiedId(null), 2000);
   };
 
-  const handleViewDebtor = (debtor: Debtor) => {
+  const handleViewDebtor = async (debtor: Debtor) => {
     setViewingDebtor(debtor);
+    setReceitaData(null);
+    setLoadingReceita(true);
+    
+    try {
+      // Remover caracteres especiais do CNPJ
+      const cnpjLimpo = debtor.cpfCnpj.replace(/[^\d]/g, '');
+      
+      const response = await fetch(`https://receitaws.com.br/v1/cnpj/${cnpjLimpo}`);
+      
+      if (!response.ok) {
+        throw new Error('Erro ao buscar dados da Receita Federal');
+      }
+      
+      const data = await response.json();
+      
+      if (data.status === 'ERROR') {
+        throw new Error(data.message || 'Erro ao buscar dados');
+      }
+      
+      setReceitaData(data);
+    } catch (error) {
+      console.error('Erro ao buscar dados da ReceitaWS:', error);
+      toast({
+        title: "Erro ao buscar dados",
+        description: "Não foi possível consultar os dados da Receita Federal.",
+        variant: "destructive"
+      });
+    } finally {
+      setLoadingReceita(false);
+    }
+  };
+
+  const handleCopyPhone = (phone: string) => {
+    const cleanPhone = phone.replace(/[^\d]/g, '');
+    navigator.clipboard.writeText(cleanPhone);
+    setCopiedPhone(phone);
+    toast({
+      title: "Copiado!",
+      description: "Telefone copiado para a área de transferência.",
+    });
+    setTimeout(() => setCopiedPhone(null), 2000);
+  };
+
+  const handleOpenWhatsApp = (phone: string) => {
+    const cleanPhone = phone.replace(/[^\d]/g, '');
+    window.open(`https://wa.me/55${cleanPhone}`, '_blank');
   };
 
   const totalPages = Math.ceil(debtors.length / parseInt(pageSize));
@@ -565,41 +644,226 @@ const Prospeccao = () => {
       )}
 
       {/* Dialog de Visualização */}
-      <Dialog open={!!viewingDebtor} onOpenChange={(open) => !open && setViewingDebtor(null)}>
-        <DialogContent className="max-w-2xl">
+      <Dialog open={!!viewingDebtor} onOpenChange={(open) => {
+        if (!open) {
+          setViewingDebtor(null);
+          setReceitaData(null);
+        }
+      }}>
+        <DialogContent className="max-w-4xl max-h-[85vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Detalhes do Devedor</DialogTitle>
+            <DialogTitle className="flex items-center gap-2">
+              <Building2 className="h-5 w-5" />
+              Detalhes da Empresa
+            </DialogTitle>
             <DialogDescription>
-              Informações completas do registro
+              Informações completas do registro e quadro societário
             </DialogDescription>
           </DialogHeader>
           {viewingDebtor && (
-            <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">CPF/CNPJ</p>
-                  <p className="text-sm font-semibold text-foreground mt-1 font-mono">{viewingDebtor.cpfCnpj}</p>
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">Nome/Razão Social</p>
-                  <p className="text-sm font-semibold text-foreground mt-1">{viewingDebtor.nome}</p>
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">Nome Fantasia</p>
-                  <p className="text-sm font-semibold text-foreground mt-1">{viewingDebtor.nomeFantasia || "-"}</p>
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">Valor Total</p>
-                  <p className="text-sm font-semibold text-foreground mt-1">{viewingDebtor.valorTotal}</p>
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">Valor Dívida Selecionada</p>
-                  <p className="text-sm font-semibold text-accent mt-1">{viewingDebtor.valorDividaSelecionada}</p>
+            <div className="space-y-6">
+              {/* Dados Básicos */}
+              <div className="space-y-4">
+                <h3 className="text-sm font-semibold text-foreground flex items-center gap-2">
+                  <Building2 className="h-4 w-4" />
+                  Informações Básicas
+                </h3>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground">CPF/CNPJ</p>
+                    <p className="text-sm font-semibold text-foreground mt-1 font-mono">{viewingDebtor.cpfCnpj}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground">Nome/Razão Social</p>
+                    <p className="text-sm font-semibold text-foreground mt-1">{viewingDebtor.nome}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground">Nome Fantasia</p>
+                    <p className="text-sm font-semibold text-foreground mt-1">{viewingDebtor.nomeFantasia || "-"}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground">Valor Total</p>
+                    <p className="text-sm font-semibold text-foreground mt-1">{viewingDebtor.valorTotal}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground">Valor Dívida Selecionada</p>
+                    <p className="text-sm font-semibold text-accent mt-1">{viewingDebtor.valorDividaSelecionada}</p>
+                  </div>
                 </div>
               </div>
+
+              {/* Dados da Receita Federal */}
+              {loadingReceita && (
+                <div className="flex items-center justify-center py-8">
+                  <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                  <span className="ml-2 text-sm text-muted-foreground">Consultando Receita Federal...</span>
+                </div>
+              )}
+
+              {receitaData && (
+                <>
+                  {/* Informações Cadastrais */}
+                  <div className="border-t pt-4 space-y-4">
+                    <h3 className="text-sm font-semibold text-foreground flex items-center gap-2">
+                      <Building2 className="h-4 w-4" />
+                      Dados Cadastrais (Receita Federal)
+                    </h3>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <p className="text-xs text-muted-foreground">Situação</p>
+                        <p className="text-sm font-medium">{receitaData.situacao}</p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-muted-foreground">Data de Abertura</p>
+                        <p className="text-sm font-medium">{receitaData.abertura}</p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-muted-foreground">Tipo</p>
+                        <p className="text-sm font-medium">{receitaData.tipo}</p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-muted-foreground">Porte</p>
+                        <p className="text-sm font-medium">{receitaData.porte}</p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-muted-foreground">Natureza Jurídica</p>
+                        <p className="text-sm font-medium">{receitaData.natureza_juridica}</p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-muted-foreground">Capital Social</p>
+                        <p className="text-sm font-medium">{receitaData.capital_social}</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Endereço */}
+                  <div className="border-t pt-4 space-y-4">
+                    <h3 className="text-sm font-semibold text-foreground">Endereço</h3>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="col-span-2">
+                        <p className="text-xs text-muted-foreground">Logradouro</p>
+                        <p className="text-sm font-medium">
+                          {receitaData.logradouro}, {receitaData.numero}
+                          {receitaData.complemento && ` - ${receitaData.complemento}`}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-muted-foreground">Bairro</p>
+                        <p className="text-sm font-medium">{receitaData.bairro}</p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-muted-foreground">CEP</p>
+                        <p className="text-sm font-medium">{receitaData.cep}</p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-muted-foreground">Município</p>
+                        <p className="text-sm font-medium">{receitaData.municipio}</p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-muted-foreground">UF</p>
+                        <p className="text-sm font-medium">{receitaData.uf}</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Contato */}
+                  <div className="border-t pt-4 space-y-4">
+                    <h3 className="text-sm font-semibold text-foreground">Contato</h3>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <p className="text-xs text-muted-foreground">E-mail</p>
+                        <p className="text-sm font-medium">{receitaData.email || "-"}</p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-muted-foreground">Telefone</p>
+                        {receitaData.telefone ? (
+                          <div className="flex items-center gap-2">
+                            <p className="text-sm font-medium font-mono">{receitaData.telefone}</p>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-7 w-7 p-0"
+                              onClick={() => handleCopyPhone(receitaData.telefone)}
+                              title="Copiar telefone"
+                            >
+                              {copiedPhone === receitaData.telefone ? (
+                                <Check className="h-3.5 w-3.5 text-green-600" />
+                              ) : (
+                                <Copy className="h-3.5 w-3.5" />
+                              )}
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-7 w-7 p-0"
+                              onClick={() => handleOpenWhatsApp(receitaData.telefone)}
+                              title="Abrir WhatsApp"
+                            >
+                              <MessageCircle className="h-3.5 w-3.5 text-green-600" />
+                            </Button>
+                          </div>
+                        ) : (
+                          <p className="text-sm font-medium">-</p>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Quadro Societário */}
+                  {receitaData.qsa && receitaData.qsa.length > 0 && (
+                    <div className="border-t pt-4 space-y-4">
+                      <h3 className="text-sm font-semibold text-foreground flex items-center gap-2">
+                        <User className="h-4 w-4" />
+                        Quadro Societário ({receitaData.qsa.length} {receitaData.qsa.length === 1 ? 'sócio' : 'sócios'})
+                      </h3>
+                      <div className="space-y-3">
+                        {receitaData.qsa.map((socio, index) => (
+                          <Card key={index} className="border-border">
+                            <CardContent className="pt-4">
+                              <div className="space-y-3">
+                                <div>
+                                  <p className="text-xs text-muted-foreground">Nome</p>
+                                  <p className="text-sm font-semibold text-foreground">{socio.nome}</p>
+                                </div>
+                                <div className="grid grid-cols-2 gap-4">
+                                  <div>
+                                    <p className="text-xs text-muted-foreground">Qualificação</p>
+                                    <p className="text-sm font-medium">{socio.qual}</p>
+                                  </div>
+                                  {socio.pais_origem && (
+                                    <div>
+                                      <p className="text-xs text-muted-foreground">País de Origem</p>
+                                      <p className="text-sm font-medium">{socio.pais_origem}</p>
+                                    </div>
+                                  )}
+                                </div>
+                                {socio.nome_rep_legal && (
+                                  <div className="grid grid-cols-2 gap-4">
+                                    <div>
+                                      <p className="text-xs text-muted-foreground">Representante Legal</p>
+                                      <p className="text-sm font-medium">{socio.nome_rep_legal}</p>
+                                    </div>
+                                    {socio.qual_rep_legal && (
+                                      <div>
+                                        <p className="text-xs text-muted-foreground">Qualificação do Representante</p>
+                                        <p className="text-sm font-medium">{socio.qual_rep_legal}</p>
+                                      </div>
+                                    )}
+                                  </div>
+                                )}
+                              </div>
+                            </CardContent>
+                          </Card>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </>
+              )}
               
+              {/* Metadados */}
               {metadata && (
-                <div className="border-t pt-4 mt-4">
+                <div className="border-t pt-4">
                   <p className="text-sm font-medium text-muted-foreground mb-3">Metadados da Importação</p>
                   <div className="grid grid-cols-2 gap-3">
                     <div>
