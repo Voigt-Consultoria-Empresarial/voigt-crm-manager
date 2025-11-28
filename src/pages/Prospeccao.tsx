@@ -367,12 +367,11 @@ const Prospeccao = () => {
       // Remover caracteres especiais do CNPJ
       const cnpjLimpo = debtor.cpfCnpj.replace(/[^\d]/g, '');
       
-      // Tentar buscar dados da ReceitaWS
-      const response = await fetch(`https://receitaws.com.br/v1/cnpj/${cnpjLimpo}`, {
+      // Usando proxy CORS para contornar bloqueio do navegador
+      const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(`https://receitaws.com.br/v1/cnpj/${cnpjLimpo}`)}`;
+      
+      const response = await fetch(proxyUrl, {
         method: 'GET',
-        headers: {
-          'Accept': 'application/json',
-        },
       });
       
       if (!response.ok) {
@@ -386,22 +385,19 @@ const Prospeccao = () => {
       }
       
       setReceitaData(data);
+      toast({
+        title: "Dados obtidos com sucesso",
+        description: "Informações da Receita Federal carregadas.",
+      });
     } catch (error) {
       console.error('Erro ao buscar dados da ReceitaWS:', error);
       
-      // Verificar se é erro de CORS
-      const isCorsError = error instanceof TypeError && error.message === 'Failed to fetch';
-      
       toast({
         title: "Erro ao consultar Receita Federal",
-        description: isCorsError 
-          ? "A API ReceitaWS bloqueia requisições diretas do navegador (CORS). Recomendamos habilitar o Lovable Cloud para criar um proxy." 
-          : "Não foi possível consultar os dados. Tente novamente mais tarde.",
+        description: "Não foi possível consultar os dados. Tente novamente mais tarde.",
         variant: "destructive",
         duration: 6000,
       });
-      
-      setLoadingReceita(false);
     } finally {
       setLoadingReceita(false);
     }
