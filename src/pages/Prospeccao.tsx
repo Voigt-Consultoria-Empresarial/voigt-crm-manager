@@ -20,12 +20,12 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetDescription,
+} from "@/components/ui/sheet";
 import {
   Select,
   SelectContent,
@@ -114,6 +114,7 @@ const Prospeccao = () => {
   const [pageSize, setPageSize] = useState("25");
   const [currentPage, setCurrentPage] = useState(1);
   const [viewingDebtor, setViewingDebtor] = useState<Debtor | null>(null);
+  const [isViewSheetOpen, setIsViewSheetOpen] = useState(false);
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [clienteCnpjs, setClienteCnpjs] = useState<Set<string>>(new Set());
   const [receitaData, setReceitaData] = useState<ReceitaWSData | null>(null);
@@ -360,6 +361,7 @@ const Prospeccao = () => {
 
   const handleViewDebtor = async (debtor: Debtor) => {
     setViewingDebtor(debtor);
+    setIsViewSheetOpen(true);
     setReceitaData(null);
     setLoadingReceita(true);
     
@@ -678,23 +680,24 @@ const Prospeccao = () => {
         </Card>
       )}
 
-      {/* Dialog de Visualização */}
-      <Dialog open={!!viewingDebtor} onOpenChange={(open) => {
+      {/* Sheet de Visualização */}
+      <Sheet open={isViewSheetOpen} onOpenChange={(open) => {
+        setIsViewSheetOpen(open);
         if (!open) {
           setViewingDebtor(null);
           setReceitaData(null);
         }
       }}>
-        <DialogContent className="max-w-4xl max-h-[85vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
+        <SheetContent side="right" className="w-full sm:max-w-2xl overflow-y-auto">
+          <SheetHeader>
+            <SheetTitle className="flex items-center gap-2">
               <Building2 className="h-5 w-5" />
               Detalhes da Empresa
-            </DialogTitle>
-            <DialogDescription>
+            </SheetTitle>
+            <SheetDescription>
               Informações completas do registro e quadro societário
-            </DialogDescription>
-          </DialogHeader>
+            </SheetDescription>
+          </SheetHeader>
           {viewingDebtor && (
             <div className="space-y-6">
               {/* Dados Básicos */}
@@ -903,46 +906,82 @@ const Prospeccao = () => {
                         <User className="h-4 w-4" />
                         Quadro Societário ({receitaData.qsa.length} {receitaData.qsa.length === 1 ? 'sócio' : 'sócios'})
                       </h3>
+                      
+                      {/* Lista de Sócios */}
                       <div className="space-y-3">
                         {receitaData.qsa.map((socio, index) => (
-                          <Card key={index} className="border-border">
-                            <CardContent className="pt-4">
-                              <div className="space-y-3">
-                                <div>
-                                  <p className="text-xs text-muted-foreground">Nome</p>
-                                  <p className="text-sm font-semibold text-foreground">{socio.nome}</p>
-                                </div>
-                                <div className="grid grid-cols-2 gap-4">
-                                  <div>
-                                    <p className="text-xs text-muted-foreground">Qualificação</p>
-                                    <p className="text-sm font-medium">{socio.qual}</p>
-                                  </div>
-                                  {socio.pais_origem && (
-                                    <div>
-                                      <p className="text-xs text-muted-foreground">País de Origem</p>
-                                      <p className="text-sm font-medium">{socio.pais_origem}</p>
-                                    </div>
-                                  )}
-                                </div>
-                                {socio.nome_rep_legal && (
-                                  <div className="grid grid-cols-2 gap-4">
-                                    <div>
-                                      <p className="text-xs text-muted-foreground">Representante Legal</p>
-                                      <p className="text-sm font-medium">{socio.nome_rep_legal}</p>
-                                    </div>
-                                    {socio.qual_rep_legal && (
-                                      <div>
-                                        <p className="text-xs text-muted-foreground">Qualificação do Representante</p>
-                                        <p className="text-sm font-medium">{socio.qual_rep_legal}</p>
-                                      </div>
-                                    )}
-                                  </div>
-                                )}
+                          <div key={index} className="border-l-2 border-primary/30 pl-4 py-2 space-y-2">
+                            <div>
+                              <p className="text-xs text-muted-foreground">Nome</p>
+                              <p className="text-sm font-semibold text-foreground">{socio.nome}</p>
+                            </div>
+                            <div>
+                              <p className="text-xs text-muted-foreground">Qualificação</p>
+                              <p className="text-sm font-medium">{socio.qual}</p>
+                            </div>
+                            {socio.pais_origem && (
+                              <div>
+                                <p className="text-xs text-muted-foreground">País de Origem</p>
+                                <p className="text-sm font-medium">{socio.pais_origem}</p>
                               </div>
-                            </CardContent>
-                          </Card>
+                            )}
+                            {socio.nome_rep_legal && (
+                              <div>
+                                <p className="text-xs text-muted-foreground">Representante Legal</p>
+                                <p className="text-sm font-medium">
+                                  {socio.nome_rep_legal}
+                                  {socio.qual_rep_legal && ` (${socio.qual_rep_legal})`}
+                                </p>
+                              </div>
+                            )}
+                          </div>
                         ))}
                       </div>
+
+                      {/* Contatos dos Sócios - Agrupados */}
+                      {receitaData.telefone && (
+                        <Card className="border-border bg-muted/30">
+                          <CardContent className="pt-4">
+                            <div className="space-y-3">
+                              <h4 className="text-xs font-semibold text-muted-foreground flex items-center gap-2">
+                                <Phone className="h-3.5 w-3.5" />
+                                Contatos dos Sócios
+                              </h4>
+                              <div className="flex items-center gap-2">
+                                <p className="text-sm font-medium font-mono">{receitaData.telefone}</p>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  className="h-7 w-7 p-0"
+                                  onClick={() => handleCopyPhone(receitaData.telefone)}
+                                  title="Copiar telefone"
+                                >
+                                  {copiedPhone === receitaData.telefone ? (
+                                    <Check className="h-3.5 w-3.5 text-green-600" />
+                                  ) : (
+                                    <Copy className="h-3.5 w-3.5" />
+                                  )}
+                                </Button>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  className="h-7 w-7 p-0"
+                                  onClick={() => handleOpenWhatsApp(receitaData.telefone)}
+                                  title="Abrir WhatsApp"
+                                >
+                                  <MessageCircle className="h-3.5 w-3.5 text-green-600" />
+                                </Button>
+                              </div>
+                              {receitaData.email && (
+                                <div>
+                                  <p className="text-xs text-muted-foreground">E-mail</p>
+                                  <p className="text-sm font-medium">{receitaData.email}</p>
+                                </div>
+                              )}
+                            </div>
+                          </CardContent>
+                        </Card>
+                      )}
                     </div>
                   )}
                 </>
@@ -974,8 +1013,8 @@ const Prospeccao = () => {
               )}
             </div>
           )}
-        </DialogContent>
-      </Dialog>
+        </SheetContent>
+      </Sheet>
     </div>
   );
 };
