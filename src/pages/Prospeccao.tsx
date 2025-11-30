@@ -751,13 +751,60 @@ const Prospeccao = () => {
       }}>
         <SheetContent side="right" className="w-full sm:max-w-2xl overflow-y-auto">
           <SheetHeader>
-            <SheetTitle className="flex items-center gap-2">
-              <Building2 className="h-5 w-5" />
-              Detalhes da Empresa
-            </SheetTitle>
-            <SheetDescription>
-              Informações completas do registro e quadro societário
-            </SheetDescription>
+            <div className="flex items-center justify-between mb-2">
+              <div>
+                <SheetTitle className="flex items-center gap-2">
+                  <Building2 className="h-5 w-5" />
+                  Detalhes da Empresa
+                </SheetTitle>
+                <SheetDescription>
+                  Informações completas do registro e quadro societário
+                </SheetDescription>
+              </div>
+              {viewingDebtor && (
+                <Button
+                  onClick={async () => {
+                    if (!viewingDebtor) return;
+                    
+                    // Verificar se já é cliente
+                    if (clienteCnpjs.has(viewingDebtor.cpfCnpj)) {
+                      toast({
+                        title: "Já é cliente",
+                        description: "Esta empresa já está cadastrada como cliente.",
+                        variant: "destructive"
+                      });
+                      return;
+                    }
+
+                    toast({
+                      title: "Processando...",
+                      description: "Consultando dados na Receita Federal...",
+                    });
+
+                    const empresa = await convertDebtorToEmpresa(viewingDebtor, receitaData || undefined);
+                    
+                    const savedEmpresas = localStorage.getItem('clientes_empresas');
+                    const existingEmpresas = savedEmpresas ? JSON.parse(savedEmpresas) : [];
+                    const updatedEmpresas = [...existingEmpresas, empresa];
+                    localStorage.setItem('clientes_empresas', JSON.stringify(updatedEmpresas));
+                    
+                    setClienteCnpjs(new Set(updatedEmpresas.map((e: any) => e.cnpj)));
+                    
+                    toast({
+                      title: "Adicionado aos clientes",
+                      description: "Empresa adicionada com sucesso aos clientes.",
+                    });
+                    
+                    setIsViewSheetOpen(false);
+                  }}
+                  className="gap-2"
+                  disabled={clienteCnpjs.has(viewingDebtor?.cpfCnpj || '')}
+                >
+                  <UserPlus className="h-4 w-4" />
+                  {clienteCnpjs.has(viewingDebtor?.cpfCnpj || '') ? 'Já é Cliente' : 'Adicionar Cliente'}
+                </Button>
+              )}
+            </div>
           </SheetHeader>
           {viewingDebtor && (
             <div className="space-y-6">
