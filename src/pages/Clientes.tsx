@@ -1,11 +1,11 @@
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Users, Building2, Eye, FileText, UserCircle, Info } from "lucide-react";
+import { Users, Building2, Eye, FileText, UserCircle, Info, Copy, Check, MessageCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 interface Socio {
@@ -100,7 +100,8 @@ interface Empresa {
 const Clientes = () => {
   const [empresas, setEmpresas] = useState<Empresa[]>([]);
   const [selectedEmpresa, setSelectedEmpresa] = useState<Empresa | null>(null);
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isSheetOpen, setIsSheetOpen] = useState(false);
+  const [copiedPhone, setCopiedPhone] = useState<string | null>(null);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -112,7 +113,23 @@ const Clientes = () => {
 
   const handleViewEmpresa = (empresa: Empresa) => {
     setSelectedEmpresa(empresa);
-    setIsDialogOpen(true);
+    setIsSheetOpen(true);
+  };
+
+  const handleCopyPhone = (phone: string) => {
+    const cleanPhone = phone.replace(/[^\d]/g, '');
+    navigator.clipboard.writeText(cleanPhone);
+    setCopiedPhone(phone);
+    toast({
+      title: "Copiado!",
+      description: "Telefone copiado para a área de transferência.",
+    });
+    setTimeout(() => setCopiedPhone(null), 2000);
+  };
+
+  const handleOpenWhatsApp = (phone: string) => {
+    const cleanPhone = phone.replace(/[^\d]/g, '');
+    window.open(`https://wa.me/55${cleanPhone}`, '_blank');
   };
 
   const formatCurrency = (value: number) => {
@@ -250,25 +267,25 @@ const Clientes = () => {
         </Card>
       )}
 
-      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+      <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
+        <SheetContent side="right" className="w-full sm:max-w-3xl overflow-y-auto">
           {selectedEmpresa && (
             <>
-              <DialogHeader>
-                <DialogTitle className="flex items-center gap-2">
+              <SheetHeader>
+                <SheetTitle className="flex items-center gap-2">
                   <Building2 className="h-5 w-5" />
                   {selectedEmpresa.razaoSocial}
-                </DialogTitle>
-                <DialogDescription>
+                </SheetTitle>
+                <SheetDescription>
                   CNPJ: {selectedEmpresa.cnpj} | Convertido em: {formatDate(selectedEmpresa.dataConversao)}
-                </DialogDescription>
-              </DialogHeader>
+                </SheetDescription>
+              </SheetHeader>
 
-              <Tabs defaultValue="geral" className="w-full">
+              <Tabs defaultValue="geral" className="w-full mt-6">
                 <TabsList className="grid w-full grid-cols-5">
                   <TabsTrigger value="geral">Geral</TabsTrigger>
+                  <TabsTrigger value="socios">Sócios</TabsTrigger>
                   <TabsTrigger value="receita">Receita Federal</TabsTrigger>
-                  <TabsTrigger value="socios">Sócios ({selectedEmpresa.socios.length})</TabsTrigger>
                   <TabsTrigger value="contratos">Contratos ({selectedEmpresa.contratos.length})</TabsTrigger>
                   <TabsTrigger value="extras">Informações Extras</TabsTrigger>
                 </TabsList>
@@ -336,6 +353,88 @@ const Clientes = () => {
                       </div>
                     </div>
                   </div>
+                </TabsContent>
+
+                <TabsContent value="socios" className="space-y-4">
+                  {selectedEmpresa.dadosReceitaWS?.qsa && selectedEmpresa.dadosReceitaWS.qsa.length > 0 ? (
+                    <div className="space-y-4">
+                      {/* Contatos dos Sócios */}
+                      {selectedEmpresa.dadosReceitaWS.telefone && (
+                        <Card className="border-border">
+                          <CardHeader className="pb-3">
+                            <CardTitle className="text-sm">Contatos dos Sócios</CardTitle>
+                          </CardHeader>
+                          <CardContent className="space-y-3">
+                            <div>
+                              <label className="text-sm font-medium text-muted-foreground">Telefone</label>
+                              <div className="flex items-center gap-2 mt-1">
+                                <p className="text-foreground">{selectedEmpresa.dadosReceitaWS.telefone}</p>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => handleCopyPhone(selectedEmpresa.dadosReceitaWS!.telefone!)}
+                                >
+                                  {copiedPhone === selectedEmpresa.dadosReceitaWS.telefone ? (
+                                    <Check className="h-4 w-4 text-green-500" />
+                                  ) : (
+                                    <Copy className="h-4 w-4" />
+                                  )}
+                                </Button>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => handleOpenWhatsApp(selectedEmpresa.dadosReceitaWS!.telefone!)}
+                                >
+                                  <MessageCircle className="h-4 w-4 text-green-600" />
+                                </Button>
+                              </div>
+                            </div>
+                            {selectedEmpresa.dadosReceitaWS.email && (
+                              <div>
+                                <label className="text-sm font-medium text-muted-foreground">E-mail</label>
+                                <p className="text-foreground">{selectedEmpresa.dadosReceitaWS.email}</p>
+                              </div>
+                            )}
+                          </CardContent>
+                        </Card>
+                      )}
+
+                      {/* Lista de Sócios */}
+                      <Card className="border-border">
+                        <CardHeader className="pb-3">
+                          <CardTitle className="text-sm">Quadro Societário (QSA)</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                          <div className="space-y-4">
+                            {selectedEmpresa.dadosReceitaWS.qsa.map((socio, index) => (
+                              <div key={index} className="border-l-2 border-primary/30 pl-4 py-2">
+                                <p className="font-semibold text-foreground">{socio.nome}</p>
+                                <p className="text-sm text-muted-foreground">{socio.qual}</p>
+                                {socio.pais_origem && (
+                                  <p className="text-xs text-muted-foreground mt-1">
+                                    País de Origem: {socio.pais_origem}
+                                  </p>
+                                )}
+                                {socio.nome_rep_legal && (
+                                  <div className="text-xs text-muted-foreground mt-1">
+                                    <p>Representante Legal: {socio.nome_rep_legal}</p>
+                                    {socio.qual_rep_legal && (
+                                      <p>Qualificação: {socio.qual_rep_legal}</p>
+                                    )}
+                                  </div>
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                        </CardContent>
+                      </Card>
+                    </div>
+                  ) : (
+                    <div className="text-center py-8 text-muted-foreground">
+                      <UserCircle className="h-12 w-12 mx-auto mb-2 opacity-50" />
+                      <p>Nenhum sócio cadastrado</p>
+                    </div>
+                  )}
                 </TabsContent>
 
                 <TabsContent value="receita" className="space-y-4">
@@ -526,32 +625,6 @@ const Clientes = () => {
                         </Card>
                       )}
 
-                      {/* Quadro Societário */}
-                      {selectedEmpresa.dadosReceitaWS.qsa && selectedEmpresa.dadosReceitaWS.qsa.length > 0 && (
-                        <Card className="border-border">
-                          <CardHeader className="pb-3">
-                            <CardTitle className="text-sm">Quadro Societário (QSA)</CardTitle>
-                          </CardHeader>
-                          <CardContent>
-                            <div className="space-y-3">
-                              {selectedEmpresa.dadosReceitaWS.qsa.map((socio, idx) => (
-                                <div key={idx} className="border-l-2 border-primary/30 pl-4 py-2">
-                                  <p className="font-semibold text-foreground">{socio.nome}</p>
-                                  <p className="text-sm text-muted-foreground">{socio.qual}</p>
-                                  {socio.pais_origem && (
-                                    <p className="text-xs text-muted-foreground">País: {socio.pais_origem}</p>
-                                  )}
-                                  {socio.nome_rep_legal && (
-                                    <p className="text-xs text-muted-foreground">
-                                      Rep. Legal: {socio.nome_rep_legal} ({socio.qual_rep_legal})
-                                    </p>
-                                  )}
-                                </div>
-                              ))}
-                            </div>
-                          </CardContent>
-                        </Card>
-                      )}
 
                       {/* Simples/Simei */}
                       {(selectedEmpresa.dadosReceitaWS.simples || selectedEmpresa.dadosReceitaWS.simei) && (
@@ -593,67 +666,6 @@ const Clientes = () => {
                           </CardContent>
                         </Card>
                       )}
-                    </div>
-                  )}
-                </TabsContent>
-
-                <TabsContent value="socios" className="space-y-4">
-                  {selectedEmpresa.socios.length === 0 ? (
-                    <div className="text-center py-8 text-muted-foreground">
-                      <UserCircle className="h-12 w-12 mx-auto mb-2 opacity-50" />
-                      <p>Nenhum sócio cadastrado</p>
-                    </div>
-                  ) : (
-                    <div className="space-y-4">
-                      {selectedEmpresa.socios.map((socio) => (
-                        <Card key={socio.id} className="border-border">
-                          <CardHeader className="pb-3">
-                            <CardTitle className="text-base flex items-center gap-2">
-                              <UserCircle className="h-4 w-4" />
-                              {socio.nomeCompleto}
-                            </CardTitle>
-                            <CardDescription className="font-mono text-xs">
-                              {socio.documentoCpfCnpj}
-                            </CardDescription>
-                          </CardHeader>
-                          <CardContent className="space-y-2 text-sm">
-                            <div className="grid grid-cols-2 gap-2">
-                              <div>
-                                <span className="text-muted-foreground">UF:</span> {socio.uf}
-                              </div>
-                              <div>
-                                <span className="text-muted-foreground">Emails:</span> {socio.listaEmails.length}
-                              </div>
-                            </div>
-                            {socio.listaEmails.length > 0 && (
-                              <div>
-                                <span className="text-muted-foreground">Email(s):</span>
-                                <div className="flex flex-wrap gap-1 mt-1">
-                                  {socio.listaEmails.map((email, idx) => (
-                                    <Badge key={idx} variant="secondary" className="text-xs">{email}</Badge>
-                                  ))}
-                                </div>
-                              </div>
-                            )}
-                            {socio.listaTelefones.length > 0 && (
-                              <div>
-                                <span className="text-muted-foreground">Telefone(s):</span>
-                                <div className="flex flex-wrap gap-1 mt-1">
-                                  {socio.listaTelefones.map((tel, idx) => (
-                                    <Badge key={idx} variant="secondary" className="text-xs">{tel}</Badge>
-                                  ))}
-                                </div>
-                              </div>
-                            )}
-                            {socio.endereco && (
-                              <div>
-                                <span className="text-muted-foreground">Endereço:</span>
-                                <p className="text-foreground text-xs mt-1">{socio.endereco}</p>
-                              </div>
-                            )}
-                          </CardContent>
-                        </Card>
-                      ))}
                     </div>
                   )}
                 </TabsContent>
@@ -723,8 +735,8 @@ const Clientes = () => {
               </Tabs>
             </>
           )}
-        </DialogContent>
-      </Dialog>
+        </SheetContent>
+      </Sheet>
     </div>
   );
 };
