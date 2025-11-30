@@ -262,22 +262,37 @@ const Prospeccao = () => {
     });
   };
 
-  const convertDebtorToEmpresa = (debtor: Debtor) => {
+  const convertDebtorToEmpresa = async (debtor: Debtor, dadosApi?: ReceitaWSData) => {
     // Parse valores removendo formatação
     const parseValue = (value: string): number => {
       return parseFloat(value.replace(/[^\d,.-]/g, '').replace(',', '.')) || 0;
     };
 
+    // Se não tiver dados da API, buscar
+    let receitaData = dadosApi;
+    if (!receitaData) {
+      try {
+        const cnpjLimpo = debtor.cpfCnpj.replace(/[^\d]/g, '');
+        const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(`https://receitaws.com.br/v1/cnpj/${cnpjLimpo}`)}`;
+        const response = await fetch(proxyUrl);
+        if (response.ok) {
+          receitaData = await response.json();
+        }
+      } catch (error) {
+        console.error('Erro ao buscar dados da API:', error);
+      }
+    }
+
     const empresa = {
       id: debtor.id,
-      razaoSocial: debtor.nome,
-      nomeFantasia: debtor.nomeFantasia || debtor.nome,
+      razaoSocial: receitaData?.nome || debtor.nome,
+      nomeFantasia: receitaData?.fantasia || debtor.nomeFantasia || debtor.nome,
       cnpj: debtor.cpfCnpj,
-      uf: metadata?.estado || '',
+      uf: receitaData?.uf || metadata?.estado || '',
       valorTotalDivida: parseValue(debtor.valorTotal),
       valorDividaSelecionada: parseValue(debtor.valorDividaSelecionada),
       naturezaDivida: metadata?.naturezaDivida || '',
-      statusReceita: 'pendente',
+      statusReceita: receitaData?.situacao || 'pendente',
       estagioNegociacao: 'prospeccao',
       funcionarioId: funcionario?.id || '',
       funcionarioNome: funcionario?.nome || '',
@@ -295,6 +310,33 @@ const Prospeccao = () => {
           dataPesquisa: metadata.dataPesquisa,
         } : {}
       },
+      dadosReceitaWS: receitaData ? {
+        ultima_atualizacao: receitaData.ultima_atualizacao,
+        tipo: receitaData.tipo,
+        porte: receitaData.porte,
+        abertura: receitaData.abertura,
+        atividade_principal: receitaData.atividade_principal,
+        atividades_secundarias: receitaData.atividades_secundarias,
+        natureza_juridica: receitaData.natureza_juridica,
+        logradouro: receitaData.logradouro,
+        numero: receitaData.numero,
+        complemento: receitaData.complemento,
+        cep: receitaData.cep,
+        bairro: receitaData.bairro,
+        municipio: receitaData.municipio,
+        email: receitaData.email,
+        telefone: receitaData.telefone,
+        efr: receitaData.efr,
+        situacao: receitaData.situacao,
+        data_situacao: receitaData.data_situacao,
+        motivo_situacao: receitaData.motivo_situacao,
+        situacao_especial: receitaData.situacao_especial,
+        data_situacao_especial: receitaData.data_situacao_especial,
+        capital_social: receitaData.capital_social,
+        qsa: receitaData.qsa,
+        simples: receitaData.simples,
+        simei: receitaData.simei,
+      } : undefined,
       socios: [],
       contratos: [],
       dataConversao: new Date().toISOString()
@@ -303,9 +345,17 @@ const Prospeccao = () => {
     return empresa;
   };
 
-  const handleBulkAddToClients = () => {
+  const handleBulkAddToClients = async () => {
     const selectedDebtors = debtors.filter(d => selectedRows.has(d.id));
-    const empresasToAdd = selectedDebtors.map(convertDebtorToEmpresa);
+    
+    toast({
+      title: "Processando...",
+      description: `Consultando dados de ${selectedDebtors.length} empresa(s) na Receita Federal...`,
+    });
+
+    const empresasToAdd = await Promise.all(
+      selectedDebtors.map(debtor => convertDebtorToEmpresa(debtor))
+    );
 
     // Carregar empresas existentes
     const savedEmpresas = localStorage.getItem('clientes_empresas');
@@ -328,9 +378,12 @@ const Prospeccao = () => {
     const updatedEmpresas = [...existingEmpresas, ...newEmpresas];
     localStorage.setItem('clientes_empresas', JSON.stringify(updatedEmpresas));
 
+    // Atualizar lista de CNPJs de clientes
+    setClienteCnpjs(new Set(updatedEmpresas.map((e: any) => e.cnpj)));
+
     toast({
       title: "Adicionado aos clientes",
-      description: `${newEmpresas.length} empresa(s) adicionada(s) aos clientes.`,
+      description: `${newEmpresas.length} empresa(s) adicionada(s) aos clientes com dados completos da Receita Federal.`,
     });
     
     setSelectedRows(new Set());
@@ -585,8 +638,13 @@ const Prospeccao = () => {
                               <Eye className="mr-2 h-4 w-4" />
                               Visualizar
                             </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => {
-                              const empresa = convertDebtorToEmpresa(debtor);
+                            <DropdownMenuItem onClick={async () => {
+                              toast({
+                                title: "Processando...",
+                                description: "Consultando dados na Receita Federal...",
+                              });
+
+                              const empresa = await convertDebtorToEmpresa(debtor, receitaData || undefined);
                               
                               // Carregar empresas existentes
                               const savedEmpresas = localStorage.getItem('clientes_empresas');
@@ -606,10 +664,13 @@ const Prospeccao = () => {
                               // Adicionar nova empresa
                               const updatedEmpresas = [...existingEmpresas, empresa];
                               localStorage.setItem('clientes_empresas', JSON.stringify(updatedEmpresas));
+
+                              // Atualizar lista de CNPJs de clientes
+                              setClienteCnpjs(new Set(updatedEmpresas.map((e: any) => e.cnpj)));
                               
                               toast({
                                 title: "Adicionado aos clientes",
-                                description: "Empresa adicionada com sucesso.",
+                                description: "Empresa adicionada com sucesso com dados completos da Receita Federal.",
                               });
                             }}>
                               <UserPlus className="mr-2 h-4 w-4" />

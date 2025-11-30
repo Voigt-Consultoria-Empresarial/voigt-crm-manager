@@ -29,6 +29,54 @@ interface Contrato {
   dataContrato: string;
 }
 
+interface AtividadeEconomica {
+  code: string;
+  text: string;
+}
+
+interface Simples {
+  optante: boolean;
+  data_opcao?: string;
+  data_exclusao?: string;
+  ultima_atualizacao?: string;
+}
+
+interface QSA {
+  nome: string;
+  qual: string;
+  pais_origem?: string;
+  nome_rep_legal?: string;
+  qual_rep_legal?: string;
+}
+
+interface DadosReceitaWS {
+  ultima_atualizacao?: string;
+  tipo?: string;
+  porte?: string;
+  abertura?: string;
+  atividade_principal?: AtividadeEconomica[];
+  atividades_secundarias?: AtividadeEconomica[];
+  natureza_juridica?: string;
+  logradouro?: string;
+  numero?: string;
+  complemento?: string;
+  cep?: string;
+  bairro?: string;
+  municipio?: string;
+  email?: string;
+  telefone?: string;
+  efr?: string;
+  situacao?: string;
+  data_situacao?: string;
+  motivo_situacao?: string;
+  situacao_especial?: string;
+  data_situacao_especial?: string;
+  capital_social?: string;
+  qsa?: QSA[];
+  simples?: Simples;
+  simei?: Simples;
+}
+
 interface Empresa {
   id: string;
   razaoSocial: string;
@@ -43,6 +91,7 @@ interface Empresa {
   funcionarioId?: string;
   funcionarioNome?: string;
   informacoesExtras: Record<string, any>;
+  dadosReceitaWS?: DadosReceitaWS;
   socios: Socio[];
   contratos: Contrato[];
   dataConversao: string;
@@ -216,8 +265,9 @@ const Clientes = () => {
               </DialogHeader>
 
               <Tabs defaultValue="geral" className="w-full">
-                <TabsList className="grid w-full grid-cols-4">
+                <TabsList className="grid w-full grid-cols-5">
                   <TabsTrigger value="geral">Geral</TabsTrigger>
+                  <TabsTrigger value="receita">Receita Federal</TabsTrigger>
                   <TabsTrigger value="socios">Sócios ({selectedEmpresa.socios.length})</TabsTrigger>
                   <TabsTrigger value="contratos">Contratos ({selectedEmpresa.contratos.length})</TabsTrigger>
                   <TabsTrigger value="extras">Informações Extras</TabsTrigger>
@@ -286,6 +336,265 @@ const Clientes = () => {
                       </div>
                     </div>
                   </div>
+                </TabsContent>
+
+                <TabsContent value="receita" className="space-y-4">
+                  {!selectedEmpresa.dadosReceitaWS ? (
+                    <div className="text-center py-8 text-muted-foreground">
+                      <Info className="h-12 w-12 mx-auto mb-2 opacity-50" />
+                      <p>Dados da Receita Federal não disponíveis</p>
+                      <p className="text-xs mt-2">Esta empresa foi adicionada antes da implementação da consulta automática</p>
+                    </div>
+                  ) : (
+                    <div className="space-y-6">
+                      {/* Dados Cadastrais */}
+                      <Card className="border-border">
+                        <CardHeader className="pb-3">
+                          <CardTitle className="text-sm">Dados Cadastrais</CardTitle>
+                        </CardHeader>
+                        <CardContent className="space-y-3">
+                          <div className="grid grid-cols-2 gap-4">
+                            {selectedEmpresa.dadosReceitaWS.tipo && (
+                              <div>
+                                <label className="text-sm font-medium text-muted-foreground">Tipo</label>
+                                <p className="text-foreground">{selectedEmpresa.dadosReceitaWS.tipo}</p>
+                              </div>
+                            )}
+                            {selectedEmpresa.dadosReceitaWS.porte && (
+                              <div>
+                                <label className="text-sm font-medium text-muted-foreground">Porte</label>
+                                <p className="text-foreground">{selectedEmpresa.dadosReceitaWS.porte}</p>
+                              </div>
+                            )}
+                            {selectedEmpresa.dadosReceitaWS.abertura && (
+                              <div>
+                                <label className="text-sm font-medium text-muted-foreground">Data de Abertura</label>
+                                <p className="text-foreground">{selectedEmpresa.dadosReceitaWS.abertura}</p>
+                              </div>
+                            )}
+                            {selectedEmpresa.dadosReceitaWS.natureza_juridica && (
+                              <div>
+                                <label className="text-sm font-medium text-muted-foreground">Natureza Jurídica</label>
+                                <p className="text-foreground text-sm">{selectedEmpresa.dadosReceitaWS.natureza_juridica}</p>
+                              </div>
+                            )}
+                            {selectedEmpresa.dadosReceitaWS.capital_social && (
+                              <div>
+                                <label className="text-sm font-medium text-muted-foreground">Capital Social</label>
+                                <p className="text-foreground">{selectedEmpresa.dadosReceitaWS.capital_social}</p>
+                              </div>
+                            )}
+                          </div>
+                        </CardContent>
+                      </Card>
+
+                      {/* Situação */}
+                      <Card className="border-border">
+                        <CardHeader className="pb-3">
+                          <CardTitle className="text-sm">Situação Cadastral</CardTitle>
+                        </CardHeader>
+                        <CardContent className="space-y-3">
+                          <div className="grid grid-cols-2 gap-4">
+                            {selectedEmpresa.dadosReceitaWS.situacao && (
+                              <div>
+                                <label className="text-sm font-medium text-muted-foreground">Situação</label>
+                                <Badge variant={selectedEmpresa.dadosReceitaWS.situacao === 'ATIVA' ? 'default' : 'destructive'}>
+                                  {selectedEmpresa.dadosReceitaWS.situacao}
+                                </Badge>
+                              </div>
+                            )}
+                            {selectedEmpresa.dadosReceitaWS.data_situacao && (
+                              <div>
+                                <label className="text-sm font-medium text-muted-foreground">Data da Situação</label>
+                                <p className="text-foreground">{selectedEmpresa.dadosReceitaWS.data_situacao}</p>
+                              </div>
+                            )}
+                            {selectedEmpresa.dadosReceitaWS.motivo_situacao && (
+                              <div className="col-span-2">
+                                <label className="text-sm font-medium text-muted-foreground">Motivo</label>
+                                <p className="text-foreground">{selectedEmpresa.dadosReceitaWS.motivo_situacao}</p>
+                              </div>
+                            )}
+                          </div>
+                        </CardContent>
+                      </Card>
+
+                      {/* Endereço */}
+                      <Card className="border-border">
+                        <CardHeader className="pb-3">
+                          <CardTitle className="text-sm">Endereço</CardTitle>
+                        </CardHeader>
+                        <CardContent className="space-y-3">
+                          <div className="grid grid-cols-2 gap-4">
+                            {selectedEmpresa.dadosReceitaWS.logradouro && (
+                              <div>
+                                <label className="text-sm font-medium text-muted-foreground">Logradouro</label>
+                                <p className="text-foreground">{selectedEmpresa.dadosReceitaWS.logradouro}</p>
+                              </div>
+                            )}
+                            {selectedEmpresa.dadosReceitaWS.numero && (
+                              <div>
+                                <label className="text-sm font-medium text-muted-foreground">Número</label>
+                                <p className="text-foreground">{selectedEmpresa.dadosReceitaWS.numero}</p>
+                              </div>
+                            )}
+                            {selectedEmpresa.dadosReceitaWS.complemento && (
+                              <div>
+                                <label className="text-sm font-medium text-muted-foreground">Complemento</label>
+                                <p className="text-foreground">{selectedEmpresa.dadosReceitaWS.complemento}</p>
+                              </div>
+                            )}
+                            {selectedEmpresa.dadosReceitaWS.bairro && (
+                              <div>
+                                <label className="text-sm font-medium text-muted-foreground">Bairro</label>
+                                <p className="text-foreground">{selectedEmpresa.dadosReceitaWS.bairro}</p>
+                              </div>
+                            )}
+                            {selectedEmpresa.dadosReceitaWS.municipio && (
+                              <div>
+                                <label className="text-sm font-medium text-muted-foreground">Município</label>
+                                <p className="text-foreground">{selectedEmpresa.dadosReceitaWS.municipio}</p>
+                              </div>
+                            )}
+                            {selectedEmpresa.dadosReceitaWS.cep && (
+                              <div>
+                                <label className="text-sm font-medium text-muted-foreground">CEP</label>
+                                <p className="text-foreground font-mono">{selectedEmpresa.dadosReceitaWS.cep}</p>
+                              </div>
+                            )}
+                          </div>
+                        </CardContent>
+                      </Card>
+
+                      {/* Contatos */}
+                      {(selectedEmpresa.dadosReceitaWS.email || selectedEmpresa.dadosReceitaWS.telefone) && (
+                        <Card className="border-border">
+                          <CardHeader className="pb-3">
+                            <CardTitle className="text-sm">Contatos</CardTitle>
+                          </CardHeader>
+                          <CardContent className="space-y-3">
+                            <div className="grid grid-cols-2 gap-4">
+                              {selectedEmpresa.dadosReceitaWS.email && (
+                                <div>
+                                  <label className="text-sm font-medium text-muted-foreground">Email</label>
+                                  <p className="text-foreground">{selectedEmpresa.dadosReceitaWS.email}</p>
+                                </div>
+                              )}
+                              {selectedEmpresa.dadosReceitaWS.telefone && (
+                                <div>
+                                  <label className="text-sm font-medium text-muted-foreground">Telefone</label>
+                                  <p className="text-foreground">{selectedEmpresa.dadosReceitaWS.telefone}</p>
+                                </div>
+                              )}
+                            </div>
+                          </CardContent>
+                        </Card>
+                      )}
+
+                      {/* Atividades */}
+                      {(selectedEmpresa.dadosReceitaWS.atividade_principal || selectedEmpresa.dadosReceitaWS.atividades_secundarias) && (
+                        <Card className="border-border">
+                          <CardHeader className="pb-3">
+                            <CardTitle className="text-sm">Atividades Econômicas</CardTitle>
+                          </CardHeader>
+                          <CardContent className="space-y-4">
+                            {selectedEmpresa.dadosReceitaWS.atividade_principal && selectedEmpresa.dadosReceitaWS.atividade_principal.length > 0 && (
+                              <div>
+                                <label className="text-sm font-medium text-muted-foreground">Atividade Principal</label>
+                                {selectedEmpresa.dadosReceitaWS.atividade_principal.map((ativ, idx) => (
+                                  <div key={idx} className="mt-2">
+                                    <Badge variant="default" className="mr-2">{ativ.code}</Badge>
+                                    <span className="text-sm text-foreground">{ativ.text}</span>
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                            {selectedEmpresa.dadosReceitaWS.atividades_secundarias && selectedEmpresa.dadosReceitaWS.atividades_secundarias.length > 0 && (
+                              <div>
+                                <label className="text-sm font-medium text-muted-foreground">Atividades Secundárias</label>
+                                <div className="space-y-2 mt-2">
+                                  {selectedEmpresa.dadosReceitaWS.atividades_secundarias.map((ativ, idx) => (
+                                    <div key={idx}>
+                                      <Badge variant="secondary" className="mr-2">{ativ.code}</Badge>
+                                      <span className="text-sm text-foreground">{ativ.text}</span>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+                          </CardContent>
+                        </Card>
+                      )}
+
+                      {/* Quadro Societário */}
+                      {selectedEmpresa.dadosReceitaWS.qsa && selectedEmpresa.dadosReceitaWS.qsa.length > 0 && (
+                        <Card className="border-border">
+                          <CardHeader className="pb-3">
+                            <CardTitle className="text-sm">Quadro Societário (QSA)</CardTitle>
+                          </CardHeader>
+                          <CardContent>
+                            <div className="space-y-3">
+                              {selectedEmpresa.dadosReceitaWS.qsa.map((socio, idx) => (
+                                <div key={idx} className="border-l-2 border-primary/30 pl-4 py-2">
+                                  <p className="font-semibold text-foreground">{socio.nome}</p>
+                                  <p className="text-sm text-muted-foreground">{socio.qual}</p>
+                                  {socio.pais_origem && (
+                                    <p className="text-xs text-muted-foreground">País: {socio.pais_origem}</p>
+                                  )}
+                                  {socio.nome_rep_legal && (
+                                    <p className="text-xs text-muted-foreground">
+                                      Rep. Legal: {socio.nome_rep_legal} ({socio.qual_rep_legal})
+                                    </p>
+                                  )}
+                                </div>
+                              ))}
+                            </div>
+                          </CardContent>
+                        </Card>
+                      )}
+
+                      {/* Simples/Simei */}
+                      {(selectedEmpresa.dadosReceitaWS.simples || selectedEmpresa.dadosReceitaWS.simei) && (
+                        <Card className="border-border">
+                          <CardHeader className="pb-3">
+                            <CardTitle className="text-sm">Regime Tributário</CardTitle>
+                          </CardHeader>
+                          <CardContent className="space-y-4">
+                            {selectedEmpresa.dadosReceitaWS.simples && (
+                              <div>
+                                <label className="text-sm font-medium text-muted-foreground">Simples Nacional</label>
+                                <div className="mt-2">
+                                  <Badge variant={selectedEmpresa.dadosReceitaWS.simples.optante ? 'default' : 'secondary'}>
+                                    {selectedEmpresa.dadosReceitaWS.simples.optante ? 'Optante' : 'Não Optante'}
+                                  </Badge>
+                                  {selectedEmpresa.dadosReceitaWS.simples.data_opcao && (
+                                    <p className="text-xs text-muted-foreground mt-1">
+                                      Data de Opção: {selectedEmpresa.dadosReceitaWS.simples.data_opcao}
+                                    </p>
+                                  )}
+                                </div>
+                              </div>
+                            )}
+                            {selectedEmpresa.dadosReceitaWS.simei && (
+                              <div>
+                                <label className="text-sm font-medium text-muted-foreground">Simei</label>
+                                <div className="mt-2">
+                                  <Badge variant={selectedEmpresa.dadosReceitaWS.simei.optante ? 'default' : 'secondary'}>
+                                    {selectedEmpresa.dadosReceitaWS.simei.optante ? 'Optante' : 'Não Optante'}
+                                  </Badge>
+                                  {selectedEmpresa.dadosReceitaWS.simei.data_opcao && (
+                                    <p className="text-xs text-muted-foreground mt-1">
+                                      Data de Opção: {selectedEmpresa.dadosReceitaWS.simei.data_opcao}
+                                    </p>
+                                  )}
+                                </div>
+                              </div>
+                            )}
+                          </CardContent>
+                        </Card>
+                      )}
+                    </div>
+                  )}
                 </TabsContent>
 
                 <TabsContent value="socios" className="space-y-4">
