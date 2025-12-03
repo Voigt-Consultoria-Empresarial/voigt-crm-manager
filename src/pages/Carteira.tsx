@@ -1,12 +1,13 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Progress } from "@/components/ui/progress";
-import { Users, Building2, Briefcase, Eye, UserCircle, TrendingUp, DollarSign, RefreshCw } from "lucide-react";
+import { Users, Building2, Briefcase, Eye, UserCircle, TrendingUp, DollarSign, RefreshCw, Filter, X, Search } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 
@@ -39,6 +40,16 @@ interface FuncionarioCarteira extends Funcionario {
   valorTotalCarteira: number;
 }
 
+interface Filters {
+  funcionarioId: string;
+  naturezaDivida: string;
+  valorMin: string;
+  valorMax: string;
+  statusReceita: string;
+  estagioNegociacao: string;
+  busca: string;
+}
+
 // Funcionários fictícios para demonstração
 const FUNCIONARIOS_MOCK: Funcionario[] = [
   { id: 'func-001', nome: 'João Silva', email: 'joao@voigt.com.br', cargo: 'Advogado Sênior' },
@@ -47,11 +58,30 @@ const FUNCIONARIOS_MOCK: Funcionario[] = [
   { id: 'func-004', nome: 'Ana Costa', email: 'ana@voigt.com.br', cargo: 'Consultora' },
 ];
 
+const ESTAGIOS_NEGOCIACAO = [
+  'inicial',
+  'em_negociacao',
+  'proposta_enviada',
+  'contrato_assinado',
+  'concluido',
+  'cancelado'
+];
+
 const Carteira = () => {
   const [empresas, setEmpresas] = useState<Empresa[]>([]);
   const [funcionarios] = useState<Funcionario[]>(FUNCIONARIOS_MOCK);
   const [selectedFuncionario, setSelectedFuncionario] = useState<FuncionarioCarteira | null>(null);
   const [isSheetOpen, setIsSheetOpen] = useState(false);
+  const [showFilters, setShowFilters] = useState(false);
+  const [filters, setFilters] = useState<Filters>({
+    funcionarioId: '',
+    naturezaDivida: '',
+    valorMin: '',
+    valorMax: '',
+    statusReceita: '',
+    estagioNegociacao: '',
+    busca: ''
+  });
   const { toast } = useToast();
   const { funcionario: currentUser } = useAuth();
 
@@ -66,9 +96,67 @@ const Carteira = () => {
     }
   };
 
+  // Extrair opções únicas para filtros
+  const filterOptions = useMemo(() => {
+    const naturezas = [...new Set(empresas.map(e => e.naturezaDivida).filter(Boolean))];
+    const status = [...new Set(empresas.map(e => e.statusReceita).filter(Boolean))];
+    const estagios = [...new Set(empresas.map(e => e.estagioNegociacao).filter(Boolean))];
+    return { naturezas, status, estagios };
+  }, [empresas]);
+
+  // Aplicar filtros às empresas
+  const empresasFiltradas = useMemo(() => {
+    return empresas.filter(emp => {
+      // Filtro por funcionário
+      if (filters.funcionarioId && filters.funcionarioId !== 'todos') {
+        if (filters.funcionarioId === 'sem_atribuicao') {
+          if (emp.funcionarioId) return false;
+        } else {
+          if (emp.funcionarioId !== filters.funcionarioId) return false;
+        }
+      }
+
+      // Filtro por natureza da dívida
+      if (filters.naturezaDivida && filters.naturezaDivida !== 'todos' && emp.naturezaDivida !== filters.naturezaDivida) {
+        return false;
+      }
+
+      // Filtro por valor mínimo
+      if (filters.valorMin && emp.valorDividaSelecionada < parseFloat(filters.valorMin)) {
+        return false;
+      }
+
+      // Filtro por valor máximo
+      if (filters.valorMax && emp.valorDividaSelecionada > parseFloat(filters.valorMax)) {
+        return false;
+      }
+
+      // Filtro por situação cadastral
+      if (filters.statusReceita && filters.statusReceita !== 'todos' && emp.statusReceita !== filters.statusReceita) {
+        return false;
+      }
+
+      // Filtro por estágio de negociação
+      if (filters.estagioNegociacao && filters.estagioNegociacao !== 'todos' && emp.estagioNegociacao !== filters.estagioNegociacao) {
+        return false;
+      }
+
+      // Filtro por busca (razão social, nome fantasia ou CNPJ)
+      if (filters.busca) {
+        const searchTerm = filters.busca.toLowerCase();
+        const matchRazao = emp.razaoSocial?.toLowerCase().includes(searchTerm);
+        const matchFantasia = emp.nomeFantasia?.toLowerCase().includes(searchTerm);
+        const matchCnpj = emp.cnpj?.replace(/[^\d]/g, '').includes(filters.busca.replace(/[^\d]/g, ''));
+        if (!matchRazao && !matchFantasia && !matchCnpj) return false;
+      }
+
+      return true;
+    });
+  }, [empresas, filters]);
+
   const getCarteirasPorFuncionario = (): FuncionarioCarteira[] => {
     return funcionarios.map(func => {
-      const clientesDoFuncionario = empresas.filter(emp => emp.funcionarioId === func.id);
+      const clientesDoFuncionario = empresasFiltradas.filter(emp => emp.funcionarioId === func.id);
       const valorTotal = clientesDoFuncionario.reduce((acc, emp) => acc + emp.valorDividaSelecionada, 0);
       return {
         ...func,
@@ -79,7 +167,7 @@ const Carteira = () => {
   };
 
   const getClientesSemAtribuicao = () => {
-    return empresas.filter(emp => !emp.funcionarioId);
+    return empresasFiltradas.filter(emp => !emp.funcionarioId);
   };
 
   const handleViewCarteira = (funcCarteira: FuncionarioCarteira) => {
@@ -142,6 +230,20 @@ const Carteira = () => {
     });
   };
 
+  const clearFilters = () => {
+    setFilters({
+      funcionarioId: '',
+      naturezaDivida: '',
+      valorMin: '',
+      valorMax: '',
+      statusReceita: '',
+      estagioNegociacao: '',
+      busca: ''
+    });
+  };
+
+  const hasActiveFilters = Object.values(filters).some(v => v !== '');
+
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('pt-BR', {
       style: 'currency',
@@ -149,10 +251,22 @@ const Carteira = () => {
     }).format(value);
   };
 
+  const formatEstagio = (estagio: string) => {
+    const labels: Record<string, string> = {
+      'inicial': 'Inicial',
+      'em_negociacao': 'Em Negociação',
+      'proposta_enviada': 'Proposta Enviada',
+      'contrato_assinado': 'Contrato Assinado',
+      'concluido': 'Concluído',
+      'cancelado': 'Cancelado'
+    };
+    return labels[estagio] || estagio;
+  };
+
   const carteiras = getCarteirasPorFuncionario();
   const clientesSemAtribuicao = getClientesSemAtribuicao();
-  const totalClientes = empresas.length;
-  const totalValorCarteira = empresas.reduce((acc, emp) => acc + emp.valorDividaSelecionada, 0);
+  const totalClientes = empresasFiltradas.length;
+  const totalValorCarteira = empresasFiltradas.reduce((acc, emp) => acc + emp.valorDividaSelecionada, 0);
   const maxClientesPorFunc = Math.max(...carteiras.map(c => c.clientes.length), 1);
 
   return (
@@ -164,17 +278,193 @@ const Carteira = () => {
             Visualize e gerencie a distribuição de clientes por funcionário
           </p>
         </div>
-        <Button variant="outline" size="sm" onClick={loadEmpresas}>
-          <RefreshCw className="h-4 w-4 mr-2" />
-          Atualizar
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button 
+            variant={showFilters ? "default" : "outline"} 
+            size="sm" 
+            onClick={() => setShowFilters(!showFilters)}
+          >
+            <Filter className="h-4 w-4 mr-2" />
+            Filtros
+            {hasActiveFilters && (
+              <Badge variant="secondary" className="ml-2 h-5 w-5 p-0 flex items-center justify-center">
+                !
+              </Badge>
+            )}
+          </Button>
+          <Button variant="outline" size="sm" onClick={loadEmpresas}>
+            <RefreshCw className="h-4 w-4 mr-2" />
+            Atualizar
+          </Button>
+        </div>
       </div>
+
+      {/* Filtros */}
+      {showFilters && (
+        <Card className="border-border">
+          <CardHeader className="pb-4">
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-lg flex items-center gap-2">
+                <Filter className="h-5 w-5 text-primary" />
+                Filtros de Busca
+              </CardTitle>
+              {hasActiveFilters && (
+                <Button variant="ghost" size="sm" onClick={clearFilters}>
+                  <X className="h-4 w-4 mr-1" />
+                  Limpar Filtros
+                </Button>
+              )}
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              {/* Busca por texto */}
+              <div className="lg:col-span-2">
+                <label className="text-sm font-medium text-muted-foreground mb-2 block">Buscar</label>
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    placeholder="Razão social, nome fantasia ou CNPJ..."
+                    value={filters.busca}
+                    onChange={(e) => setFilters(prev => ({ ...prev, busca: e.target.value }))}
+                    className="pl-10"
+                  />
+                </div>
+              </div>
+
+              {/* Funcionário */}
+              <div>
+                <label className="text-sm font-medium text-muted-foreground mb-2 block">Funcionário</label>
+                <Select 
+                  value={filters.funcionarioId} 
+                  onValueChange={(value) => setFilters(prev => ({ ...prev, funcionarioId: value }))}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Todos" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="todos">Todos</SelectItem>
+                    <SelectItem value="sem_atribuicao">Sem Atribuição</SelectItem>
+                    {funcionarios.map((func) => (
+                      <SelectItem key={func.id} value={func.id}>
+                        {func.nome}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Natureza da Dívida */}
+              <div>
+                <label className="text-sm font-medium text-muted-foreground mb-2 block">Natureza da Dívida</label>
+                <Select 
+                  value={filters.naturezaDivida} 
+                  onValueChange={(value) => setFilters(prev => ({ ...prev, naturezaDivida: value }))}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Todas" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="todos">Todas</SelectItem>
+                    {filterOptions.naturezas.map((nat) => (
+                      <SelectItem key={nat} value={nat}>
+                        {nat}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Valor Mínimo */}
+              <div>
+                <label className="text-sm font-medium text-muted-foreground mb-2 block">Valor Mínimo (R$)</label>
+                <Input
+                  type="number"
+                  placeholder="0,00"
+                  value={filters.valorMin}
+                  onChange={(e) => setFilters(prev => ({ ...prev, valorMin: e.target.value }))}
+                />
+              </div>
+
+              {/* Valor Máximo */}
+              <div>
+                <label className="text-sm font-medium text-muted-foreground mb-2 block">Valor Máximo (R$)</label>
+                <Input
+                  type="number"
+                  placeholder="999.999,00"
+                  value={filters.valorMax}
+                  onChange={(e) => setFilters(prev => ({ ...prev, valorMax: e.target.value }))}
+                />
+              </div>
+
+              {/* Situação Cadastral */}
+              <div>
+                <label className="text-sm font-medium text-muted-foreground mb-2 block">Situação Cadastral</label>
+                <Select 
+                  value={filters.statusReceita} 
+                  onValueChange={(value) => setFilters(prev => ({ ...prev, statusReceita: value }))}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Todas" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="todos">Todas</SelectItem>
+                    {filterOptions.status.map((stat) => (
+                      <SelectItem key={stat} value={stat}>
+                        {stat}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Estágio de Negociação */}
+              <div>
+                <label className="text-sm font-medium text-muted-foreground mb-2 block">Estágio de Negociação</label>
+                <Select 
+                  value={filters.estagioNegociacao} 
+                  onValueChange={(value) => setFilters(prev => ({ ...prev, estagioNegociacao: value }))}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Todos" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="todos">Todos</SelectItem>
+                    {filterOptions.estagios.length > 0 ? (
+                      filterOptions.estagios.map((est) => (
+                        <SelectItem key={est} value={est}>
+                          {formatEstagio(est)}
+                        </SelectItem>
+                      ))
+                    ) : (
+                      ESTAGIOS_NEGOCIACAO.map((est) => (
+                        <SelectItem key={est} value={est}>
+                          {formatEstagio(est)}
+                        </SelectItem>
+                      ))
+                    )}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            {hasActiveFilters && (
+              <div className="mt-4 pt-4 border-t border-border">
+                <p className="text-sm text-muted-foreground">
+                  Exibindo <span className="font-semibold text-foreground">{empresasFiltradas.length}</span> de{" "}
+                  <span className="font-semibold text-foreground">{empresas.length}</span> clientes
+                </p>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
 
       {/* Cards de Resumo */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <Card className="border-border">
           <CardHeader className="pb-2">
-            <CardDescription>Total de Clientes</CardDescription>
+            <CardDescription>Total de Clientes {hasActiveFilters && "(filtrado)"}</CardDescription>
             <CardTitle className="text-3xl flex items-center gap-2">
               <Building2 className="h-6 w-6 text-primary" />
               {totalClientes}
@@ -192,7 +482,7 @@ const Carteira = () => {
         </Card>
         <Card className="border-border">
           <CardHeader className="pb-2">
-            <CardDescription>Valor Total em Carteira</CardDescription>
+            <CardDescription>Valor Total em Carteira {hasActiveFilters && "(filtrado)"}</CardDescription>
             <CardTitle className="text-2xl flex items-center gap-2">
               <DollarSign className="h-6 w-6 text-primary" />
               {formatCurrency(totalValorCarteira)}
@@ -304,6 +594,8 @@ const Carteira = () => {
                   <TableHead>Razão Social</TableHead>
                   <TableHead>CNPJ</TableHead>
                   <TableHead>UF</TableHead>
+                  <TableHead>Natureza</TableHead>
+                  <TableHead>Estágio</TableHead>
                   <TableHead className="text-right">Valor Selecionado</TableHead>
                   <TableHead>Atribuir para</TableHead>
                 </TableRow>
@@ -321,6 +613,12 @@ const Carteira = () => {
                     </TableCell>
                     <TableCell className="font-mono text-sm whitespace-nowrap">{empresa.cnpj}</TableCell>
                     <TableCell>{empresa.uf}</TableCell>
+                    <TableCell>
+                      <Badge variant="outline" className="text-xs">{empresa.naturezaDivida}</Badge>
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant="secondary" className="text-xs">{formatEstagio(empresa.estagioNegociacao)}</Badge>
+                    </TableCell>
                     <TableCell className="text-right font-semibold">
                       {formatCurrency(empresa.valorDividaSelecionada)}
                     </TableCell>
@@ -387,6 +685,7 @@ const Carteira = () => {
                               <div className="flex items-center gap-2 mt-2">
                                 <Badge variant="outline">{empresa.naturezaDivida}</Badge>
                                 <Badge variant="secondary">{empresa.uf}</Badge>
+                                <Badge variant="secondary">{formatEstagio(empresa.estagioNegociacao)}</Badge>
                               </div>
                             </div>
                             <div className="text-right">
