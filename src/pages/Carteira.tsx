@@ -7,9 +7,10 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Progress } from "@/components/ui/progress";
-import { Users, Building2, Briefcase, Eye, UserCircle, TrendingUp, DollarSign, RefreshCw, Filter, X, Search } from "lucide-react";
+import { Users, Building2, Briefcase, Eye, UserCircle, TrendingUp, DollarSign, RefreshCw, Filter, X, Search, ExternalLink } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
+import ClienteDetailSheet, { ClienteEmpresa } from "@/components/ClienteDetailSheet";
 
 interface Empresa {
   id: string;
@@ -73,6 +74,8 @@ const Carteira = () => {
   const [selectedFuncionario, setSelectedFuncionario] = useState<FuncionarioCarteira | null>(null);
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
+  const [selectedClienteDetail, setSelectedClienteDetail] = useState<ClienteEmpresa | null>(null);
+  const [isClienteDetailOpen, setIsClienteDetailOpen] = useState(false);
   const [filters, setFilters] = useState<Filters>({
     funcionarioId: '',
     naturezaDivida: '',
@@ -84,6 +87,11 @@ const Carteira = () => {
   });
   const { toast } = useToast();
   const { funcionario: currentUser } = useAuth();
+
+  const handleViewClienteDetail = (empresa: Empresa) => {
+    setSelectedClienteDetail(empresa as ClienteEmpresa);
+    setIsClienteDetailOpen(true);
+  };
 
   useEffect(() => {
     loadEmpresas();
@@ -688,25 +696,35 @@ const Carteira = () => {
                                 <Badge variant="secondary">{formatEstagio(empresa.estagioNegociacao)}</Badge>
                               </div>
                             </div>
-                            <div className="text-right">
+                            <div className="text-right space-y-2">
                               <p className="text-lg font-bold text-primary">
                                 {formatCurrency(empresa.valorDividaSelecionada)}
                               </p>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                className="text-destructive hover:text-destructive mt-2"
-                                onClick={() => {
-                                  handleRemoverAtribuicao(empresa.id);
-                                  setSelectedFuncionario({
-                                    ...selectedFuncionario,
-                                    clientes: selectedFuncionario.clientes.filter(c => c.id !== empresa.id),
-                                    valorTotalCarteira: selectedFuncionario.valorTotalCarteira - empresa.valorDividaSelecionada
-                                  });
-                                }}
-                              >
-                                Remover da carteira
-                              </Button>
+                              <div className="flex items-center gap-2 justify-end">
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => handleViewClienteDetail(empresa)}
+                                  title="Ver detalhes completos"
+                                >
+                                  <ExternalLink className="h-4 w-4" />
+                                </Button>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  className="text-destructive hover:text-destructive"
+                                  onClick={() => {
+                                    handleRemoverAtribuicao(empresa.id);
+                                    setSelectedFuncionario({
+                                      ...selectedFuncionario,
+                                      clientes: selectedFuncionario.clientes.filter(c => c.id !== empresa.id),
+                                      valorTotalCarteira: selectedFuncionario.valorTotalCarteira - empresa.valorDividaSelecionada
+                                    });
+                                  }}
+                                >
+                                  Remover da carteira
+                                </Button>
+                              </div>
                             </div>
                           </div>
                         </CardContent>
@@ -719,6 +737,13 @@ const Carteira = () => {
           )}
         </SheetContent>
       </Sheet>
+
+      {/* Sheet de Detalhes do Cliente */}
+      <ClienteDetailSheet
+        empresa={selectedClienteDetail}
+        isOpen={isClienteDetailOpen}
+        onOpenChange={setIsClienteDetailOpen}
+      />
     </div>
   );
 };
