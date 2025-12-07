@@ -2,7 +2,8 @@ import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Upload, Download, MoreVertical, Trash2, Eye, UserPlus, RefreshCw, Copy, Check, Phone, MessageCircle, Loader2, Building2, User } from "lucide-react";
+import { Upload, Download, MoreVertical, Trash2, Eye, UserPlus, RefreshCw, Copy, Check, Phone, MessageCircle, Loader2, Building2, User, CheckCircle, XCircle, AlertCircle, MinusCircle, Search } from "lucide-react";
+import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/contexts/AuthContext";
 import {
@@ -43,6 +44,8 @@ interface Debtor {
   nomeFantasia: string;
   valorTotal: string;
   valorDividaSelecionada: string;
+  situacaoCadastral?: string;
+  receitaDataCache?: ReceitaWSData;
 }
 
 interface Metadata {
@@ -120,8 +123,118 @@ const Prospeccao = () => {
   const [receitaData, setReceitaData] = useState<ReceitaWSData | null>(null);
   const [loadingReceita, setLoadingReceita] = useState(false);
   const [copiedPhone, setCopiedPhone] = useState<string | null>(null);
+  const [bulkQueryProgress, setBulkQueryProgress] = useState<{ current: number; total: number; running: boolean }>({ current: 0, total: 0, running: false });
   const { toast } = useToast();
   const { funcionario } = useAuth();
+
+  // Função para obter ícone de situação cadastral
+  const getSituacaoIcon = (situacao?: string) => {
+    if (!situacao) return <span title="Não consultado"><MinusCircle className="h-4 w-4 text-muted-foreground" /></span>;
+    
+    const situacaoLower = situacao.toLowerCase();
+    if (situacaoLower === 'ativa') {
+      return <span title="Ativa"><CheckCircle className="h-4 w-4 text-green-500" /></span>;
+    } else if (situacaoLower === 'inapta' || situacaoLower === 'suspensa') {
+      return <span title={situacao}><XCircle className="h-4 w-4 text-red-500" /></span>;
+    } else if (situacaoLower === 'baixada') {
+      return <span title="Baixada"><AlertCircle className="h-4 w-4 text-orange-500" /></span>;
+    } else {
+      return <span title={situacao}><AlertCircle className="h-4 w-4 text-yellow-500" /></span>;
+    }
+  };
+
+  // Consulta em massa na API da Receita
+  const handleBulkQuery = async () => {
+    const debtorsToQuery = selectedRows.size > 0 
+      ? debtors.filter(d => selectedRows.has(d.id))
+      : debtors;
+    
+    if (debtorsToQuery.length === 0) {
+      toast({
+        title: "Nenhum registro",
+        description: "Não há registros para consultar.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setBulkQueryProgress({ current: 0, total: debtorsToQuery.length, running: true });
+    
+    toast({
+      title: "Iniciando consulta em massa",
+      description: `Consultando ${debtorsToQuery.length} registro(s) na Receita Federal...`,
+    });
+
+    const updatedDebtors = [...debtors];
+    let successCount = 0;
+    let errorCount = 0;
+
+    for (let i = 0; i < debtorsToQuery.length; i++) {
+      const debtor = debtorsToQuery[i];
+      const index = updatedDebtors.findIndex(d => d.id === debtor.id);
+      
+      try {
+        const cnpjLimpo = debtor.cpfCnpj.replace(/[^\d]/g, '');
+        
+        // Verificar se é CNPJ (14 dígitos)
+        if (cnpjLimpo.length !== 14) {
+          updatedDebtors[index] = {
+            ...updatedDebtors[index],
+            situacaoCadastral: 'CPF'
+          };
+          setBulkQueryProgress(prev => ({ ...prev, current: i + 1 }));
+          continue;
+        }
+
+        const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(`https://receitaws.com.br/v1/cnpj/${cnpjLimpo}`)}`;
+        
+        const response = await fetch(proxyUrl);
+        
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        
+        if (data.status === 'ERROR') {
+          updatedDebtors[index] = {
+            ...updatedDebtors[index],
+            situacaoCadastral: 'ERRO'
+          };
+          errorCount++;
+        } else {
+          updatedDebtors[index] = {
+            ...updatedDebtors[index],
+            situacaoCadastral: data.situacao,
+            receitaDataCache: data
+          };
+          successCount++;
+        }
+      } catch (error) {
+        console.error(`Erro ao consultar ${debtor.cpfCnpj}:`, error);
+        updatedDebtors[index] = {
+          ...updatedDebtors[index],
+          situacaoCadastral: 'ERRO'
+        };
+        errorCount++;
+      }
+      
+      setBulkQueryProgress(prev => ({ ...prev, current: i + 1 }));
+      setDebtors([...updatedDebtors]);
+      
+      // Delay entre requisições para não sobrecarregar a API (1.5s)
+      if (i < debtorsToQuery.length - 1) {
+        await new Promise(resolve => setTimeout(resolve, 1500));
+      }
+    }
+
+    setBulkQueryProgress({ current: 0, total: 0, running: false });
+    
+    toast({
+      title: "Consulta em massa concluída",
+      description: `${successCount} sucesso(s), ${errorCount} erro(s).`,
+    });
+  };
 
   // Load data from localStorage on mount
   useEffect(() => {
@@ -558,20 +671,45 @@ const Prospeccao = () => {
                   {debtors.length} registro(s) importado(s)
                 </CardDescription>
               </div>
-              {selectedRows.size > 0 && (
-                <div className="flex gap-2">
-                  <Badge variant="secondary">{selectedRows.size} selecionado(s)</Badge>
-                  <Button size="sm" variant="outline" onClick={handleBulkAddToClients}>
-                    <UserPlus className="mr-2 h-4 w-4" />
-                    Adicionar aos Clientes
-                  </Button>
-                  <Button size="sm" variant="destructive" onClick={handleBulkDelete}>
-                    <Trash2 className="mr-2 h-4 w-4" />
-                    Remover
-                  </Button>
-                </div>
-              )}
+              <div className="flex gap-2 items-center">
+                <Button 
+                  size="sm" 
+                  variant="outline" 
+                  onClick={handleBulkQuery}
+                  disabled={bulkQueryProgress.running}
+                >
+                  {bulkQueryProgress.running ? (
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  ) : (
+                    <Search className="mr-2 h-4 w-4" />
+                  )}
+                  {selectedRows.size > 0 ? `Consultar Selecionados (${selectedRows.size})` : 'Consultar Todos'}
+                </Button>
+                {selectedRows.size > 0 && (
+                  <>
+                    <Badge variant="secondary">{selectedRows.size} selecionado(s)</Badge>
+                    <Button size="sm" variant="outline" onClick={handleBulkAddToClients}>
+                      <UserPlus className="mr-2 h-4 w-4" />
+                      Adicionar aos Clientes
+                    </Button>
+                    <Button size="sm" variant="destructive" onClick={handleBulkDelete}>
+                      <Trash2 className="mr-2 h-4 w-4" />
+                      Remover
+                    </Button>
+                  </>
+                )}
+              </div>
             </div>
+            
+            {bulkQueryProgress.running && (
+              <div className="mb-4 space-y-2">
+                <div className="flex items-center justify-between text-sm text-muted-foreground">
+                  <span>Consultando Receita Federal...</span>
+                  <span>{bulkQueryProgress.current} de {bulkQueryProgress.total}</span>
+                </div>
+                <Progress value={(bulkQueryProgress.current / bulkQueryProgress.total) * 100} className="h-2" />
+              </div>
+            )}
           </CardHeader>
           <CardContent>
             <div className="rounded-md border border-border">
@@ -589,6 +727,7 @@ const Prospeccao = () => {
                     <TableHead>Nome Fantasia</TableHead>
                     <TableHead className="text-right">Valor Total</TableHead>
                     <TableHead className="text-right">Valor Dívida</TableHead>
+                    <TableHead className="w-16 text-center">Situação</TableHead>
                     <TableHead className="w-12"></TableHead>
                   </TableRow>
                 </TableHeader>
@@ -626,6 +765,11 @@ const Prospeccao = () => {
                       <TableCell className="text-muted-foreground">{debtor.nomeFantasia || "-"}</TableCell>
                       <TableCell className="text-right font-medium">{debtor.valorTotal}</TableCell>
                       <TableCell className="text-right font-medium text-accent">{debtor.valorDividaSelecionada}</TableCell>
+                      <TableCell className="text-center">
+                        <div className="flex items-center justify-center" title={debtor.situacaoCadastral || 'Não consultado'}>
+                          {getSituacaoIcon(debtor.situacaoCadastral)}
+                        </div>
+                      </TableCell>
                       <TableCell>
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
