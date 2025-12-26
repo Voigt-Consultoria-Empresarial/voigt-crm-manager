@@ -28,6 +28,10 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  ToggleGroup,
+  ToggleGroupItem,
+} from "@/components/ui/toggle-group";
 import { 
   Plus, 
   MoreHorizontal, 
@@ -41,9 +45,12 @@ import {
   Filter,
   X,
   Search,
-  Calendar
+  Calendar,
+  LayoutList,
+  Columns3
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import TarefaKanban from "@/components/TarefaKanban";
 import { useAuth } from "@/contexts/AuthContext";
 import {
   Sheet,
@@ -108,6 +115,7 @@ const Tarefas = () => {
   const [selectedTarefa, setSelectedTarefa] = useState<Tarefa | null>(null);
   const [editingTarefa, setEditingTarefa] = useState<Tarefa | null>(null);
   const [showFilters, setShowFilters] = useState(false);
+  const [viewMode, setViewMode] = useState<"lista" | "kanban">("lista");
 
   const [filters, setFilters] = useState({
     busca: "",
@@ -502,11 +510,30 @@ const Tarefas = () => {
         </Card>
       </div>
 
-      {/* Filters */}
+      {/* View Mode Toggle + Filters */}
       <Card>
         <CardHeader className="pb-3">
-          <div className="flex items-center justify-between">
-            <CardTitle className="text-base">Lista de Tarefas</CardTitle>
+          <div className="flex items-center justify-between flex-wrap gap-4">
+            <div className="flex items-center gap-4">
+              <CardTitle className="text-base">
+                {viewMode === "lista" ? "Lista de Tarefas" : "Quadro Kanban"}
+              </CardTitle>
+              <ToggleGroup 
+                type="single" 
+                value={viewMode} 
+                onValueChange={(v) => v && setViewMode(v as "lista" | "kanban")}
+                className="bg-muted rounded-md p-1"
+              >
+                <ToggleGroupItem value="lista" size="sm" className="gap-1.5 data-[state=on]:bg-background">
+                  <LayoutList className="h-4 w-4" />
+                  Lista
+                </ToggleGroupItem>
+                <ToggleGroupItem value="kanban" size="sm" className="gap-1.5 data-[state=on]:bg-background">
+                  <Columns3 className="h-4 w-4" />
+                  Kanban
+                </ToggleGroupItem>
+              </ToggleGroup>
+            </div>
             <Button
               variant="outline"
               size="sm"
@@ -584,109 +611,124 @@ const Tarefas = () => {
             </div>
           </CardContent>
         )}
-        <CardContent>
-          {tarefasFiltradas.length === 0 ? (
-            <div className="text-center py-8 text-muted-foreground">
-              Nenhuma tarefa encontrada
-            </div>
-          ) : (
-            <div className="space-y-2">
-              {tarefasFiltradas.map((tarefa) => {
-                const StatusIcon = statusConfig[tarefa.status].icon;
-                const vencida = isVencida(tarefa);
-                return (
-                  <div
-                    key={tarefa.id}
-                    className={`flex items-center gap-4 p-4 rounded-lg border ${
-                      vencida ? "border-destructive bg-destructive/5" : "border-border"
-                    } ${tarefa.status === "concluida" ? "opacity-60" : ""}`}
-                  >
-                    <Checkbox
-                      checked={tarefa.status === "concluida"}
-                      onCheckedChange={() => handleToggleConcluida(tarefa)}
-                    />
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <span
-                          className={`font-medium ${
-                            tarefa.status === "concluida" ? "line-through text-muted-foreground" : ""
-                          }`}
-                        >
-                          {tarefa.titulo}
-                        </span>
-                        <Badge variant={prioridadeConfig[tarefa.prioridade].variant}>
-                          {prioridadeConfig[tarefa.prioridade].label}
-                        </Badge>
-                        {tarefa.categoria && (
-                          <Badge variant="outline">{tarefa.categoria}</Badge>
-                        )}
-                        {vencida && (
-                          <Badge variant="destructive">Vencida</Badge>
-                        )}
-                      </div>
-                      <div className="flex items-center gap-4 text-sm text-muted-foreground mt-1">
-                        <span className="flex items-center gap-1">
-                          <StatusIcon className="h-3 w-3" />
-                          {statusConfig[tarefa.status].label}
-                        </span>
-                        {tarefa.dataVencimento && (
-                          <span className="flex items-center gap-1">
-                            <Calendar className="h-3 w-3" />
-                            {formatDate(tarefa.dataVencimento)}
+        
+        {/* List View */}
+        {viewMode === "lista" && (
+          <CardContent>
+            {tarefasFiltradas.length === 0 ? (
+              <div className="text-center py-8 text-muted-foreground">
+                Nenhuma tarefa encontrada
+              </div>
+            ) : (
+              <div className="space-y-2">
+                {tarefasFiltradas.map((tarefa) => {
+                  const StatusIcon = statusConfig[tarefa.status].icon;
+                  const vencida = isVencida(tarefa);
+                  return (
+                    <div
+                      key={tarefa.id}
+                      className={`flex items-center gap-4 p-4 rounded-lg border ${
+                        vencida ? "border-destructive bg-destructive/5" : "border-border"
+                      } ${tarefa.status === "concluida" ? "opacity-60" : ""}`}
+                    >
+                      <Checkbox
+                        checked={tarefa.status === "concluida"}
+                        onCheckedChange={() => handleToggleConcluida(tarefa)}
+                      />
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span
+                            className={`font-medium ${
+                              tarefa.status === "concluida" ? "line-through text-muted-foreground" : ""
+                            }`}
+                          >
+                            {tarefa.titulo}
                           </span>
-                        )}
-                        {tarefa.clienteNome && (
-                          <span>Cliente: {tarefa.clienteNome}</span>
-                        )}
+                          <Badge variant={prioridadeConfig[tarefa.prioridade].variant}>
+                            {prioridadeConfig[tarefa.prioridade].label}
+                          </Badge>
+                          {tarefa.categoria && (
+                            <Badge variant="outline">{tarefa.categoria}</Badge>
+                          )}
+                          {vencida && (
+                            <Badge variant="destructive">Vencida</Badge>
+                          )}
+                        </div>
+                        <div className="flex items-center gap-4 text-sm text-muted-foreground mt-1">
+                          <span className="flex items-center gap-1">
+                            <StatusIcon className="h-3 w-3" />
+                            {statusConfig[tarefa.status].label}
+                          </span>
+                          {tarefa.dataVencimento && (
+                            <span className="flex items-center gap-1">
+                              <Calendar className="h-3 w-3" />
+                              {formatDate(tarefa.dataVencimento)}
+                            </span>
+                          )}
+                          {tarefa.clienteNome && (
+                            <span>Cliente: {tarefa.clienteNome}</span>
+                          )}
+                        </div>
                       </div>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="icon">
+                            <MoreHorizontal className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem onClick={() => handleView(tarefa)}>
+                            <Eye className="h-4 w-4 mr-2" />
+                            Visualizar
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => handleEdit(tarefa)}>
+                            <Edit className="h-4 w-4 mr-2" />
+                            Editar
+                          </DropdownMenuItem>
+                          <DropdownMenuItem
+                            onClick={() => handleStatusChange(tarefa.id, "em_progresso")}
+                          >
+                            Em Progresso
+                          </DropdownMenuItem>
+                          <DropdownMenuItem
+                            onClick={() => handleStatusChange(tarefa.id, "concluida")}
+                          >
+                            Marcar como Concluída
+                          </DropdownMenuItem>
+                          <DropdownMenuItem
+                            onClick={() => handleStatusChange(tarefa.id, "cancelada")}
+                            className="text-destructive"
+                          >
+                            Cancelar
+                          </DropdownMenuItem>
+                          <DropdownMenuItem
+                            onClick={() => handleDelete(tarefa.id)}
+                            className="text-destructive"
+                          >
+                            <Trash2 className="h-4 w-4 mr-2" />
+                            Excluir
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
                     </div>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon">
-                          <MoreHorizontal className="h-4 w-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuItem onClick={() => handleView(tarefa)}>
-                          <Eye className="h-4 w-4 mr-2" />
-                          Visualizar
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => handleEdit(tarefa)}>
-                          <Edit className="h-4 w-4 mr-2" />
-                          Editar
-                        </DropdownMenuItem>
-                        <DropdownMenuItem
-                          onClick={() => handleStatusChange(tarefa.id, "em_progresso")}
-                        >
-                          Em Progresso
-                        </DropdownMenuItem>
-                        <DropdownMenuItem
-                          onClick={() => handleStatusChange(tarefa.id, "concluida")}
-                        >
-                          Marcar como Concluída
-                        </DropdownMenuItem>
-                        <DropdownMenuItem
-                          onClick={() => handleStatusChange(tarefa.id, "cancelada")}
-                          className="text-destructive"
-                        >
-                          Cancelar
-                        </DropdownMenuItem>
-                        <DropdownMenuItem
-                          onClick={() => handleDelete(tarefa.id)}
-                          className="text-destructive"
-                        >
-                          <Trash2 className="h-4 w-4 mr-2" />
-                          Excluir
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </div>
-                );
-              })}
-            </div>
-          )}
-        </CardContent>
+                  );
+                })}
+              </div>
+            )}
+          </CardContent>
+        )}
       </Card>
+
+      {/* Kanban View */}
+      {viewMode === "kanban" && (
+        <TarefaKanban
+          tarefas={tarefasFiltradas}
+          onStatusChange={handleStatusChange}
+          onEdit={handleEdit}
+          onDelete={handleDelete}
+          onView={handleView}
+        />
+      )}
 
       {/* Detail Sheet */}
       <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
