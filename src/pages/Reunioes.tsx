@@ -35,6 +35,10 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  ToggleGroup,
+  ToggleGroupItem,
+} from "@/components/ui/toggle-group";
 import { 
   Calendar, 
   Plus, 
@@ -48,7 +52,9 @@ import {
   Video,
   Filter,
   X,
-  Search
+  Search,
+  LayoutList,
+  CalendarDays
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
@@ -59,6 +65,7 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
+import { ReuniaoCalendar } from "@/components/ReuniaoCalendar";
 
 interface Reuniao {
   id: string;
@@ -107,6 +114,7 @@ const Reunioes = () => {
   const [selectedReuniao, setSelectedReuniao] = useState<Reuniao | null>(null);
   const [editingReuniao, setEditingReuniao] = useState<Reuniao | null>(null);
   const [showFilters, setShowFilters] = useState(false);
+  const [viewMode, setViewMode] = useState<"lista" | "calendario">("lista");
 
   const [filters, setFilters] = useState({
     busca: "",
@@ -245,6 +253,14 @@ const Reunioes = () => {
   const handleView = (reuniao: Reuniao) => {
     setSelectedReuniao(reuniao);
     setIsSheetOpen(true);
+  };
+
+  const handleNewReuniaoFromCalendar = (date?: string) => {
+    resetForm();
+    if (date) {
+      setFormData(prev => ({ ...prev, data: date }));
+    }
+    setIsDialogOpen(true);
   };
 
   const clearFilters = () => {
@@ -515,177 +531,210 @@ const Reunioes = () => {
         </Card>
       </div>
 
-      {/* Filters */}
-      <Card>
-        <CardHeader className="pb-3">
-          <div className="flex items-center justify-between">
+      {/* View Mode Toggle and Filters */}
+      <div className="flex items-center justify-between gap-4">
+        <ToggleGroup
+          type="single"
+          value={viewMode}
+          onValueChange={(value) => value && setViewMode(value as "lista" | "calendario")}
+          className="bg-muted p-1 rounded-lg"
+        >
+          <ToggleGroupItem value="lista" aria-label="Modo Lista" className="gap-2 data-[state=on]:bg-background">
+            <LayoutList className="h-4 w-4" />
+            Lista
+          </ToggleGroupItem>
+          <ToggleGroupItem value="calendario" aria-label="Modo Calendário" className="gap-2 data-[state=on]:bg-background">
+            <CalendarDays className="h-4 w-4" />
+            Calendário
+          </ToggleGroupItem>
+        </ToggleGroup>
+
+        {viewMode === "lista" && (
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setShowFilters(!showFilters)}
+            className="gap-2"
+          >
+            <Filter className="h-4 w-4" />
+            Filtros
+          </Button>
+        )}
+      </div>
+
+      {/* Calendar View */}
+      {viewMode === "calendario" && (
+        <ReuniaoCalendar
+          reunioes={reunioes}
+          onView={handleView}
+          onEdit={handleEdit}
+          onDelete={handleDelete}
+          onNewReuniao={handleNewReuniaoFromCalendar}
+        />
+      )}
+
+      {/* List View */}
+      {viewMode === "lista" && (
+        <Card>
+          <CardHeader className="pb-3">
             <CardTitle className="text-base">Lista de Reuniões</CardTitle>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setShowFilters(!showFilters)}
-              className="gap-2"
-            >
-              <Filter className="h-4 w-4" />
-              Filtros
-            </Button>
-          </div>
-        </CardHeader>
-        {showFilters && (
-          <CardContent className="border-t pt-4">
-            <div className="grid gap-4 md:grid-cols-5">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input
-                  placeholder="Buscar..."
-                  value={filters.busca}
-                  onChange={(e) =>
-                    setFilters({ ...filters, busca: e.target.value })
-                  }
-                  className="pl-9"
-                />
-              </div>
-              <Select
-                value={filters.status}
-                onValueChange={(v) => setFilters({ ...filters, status: v })}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Status" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="todos">Todos os Status</SelectItem>
-                  <SelectItem value="agendada">Agendada</SelectItem>
-                  <SelectItem value="em_andamento">Em Andamento</SelectItem>
-                  <SelectItem value="concluida">Concluída</SelectItem>
-                  <SelectItem value="cancelada">Cancelada</SelectItem>
-                </SelectContent>
-              </Select>
-              <Select
-                value={filters.tipo}
-                onValueChange={(v) => setFilters({ ...filters, tipo: v })}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Tipo" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="todos">Todos os Tipos</SelectItem>
-                  <SelectItem value="presencial">Presencial</SelectItem>
-                  <SelectItem value="online">Online</SelectItem>
-                  <SelectItem value="hibrida">Híbrida</SelectItem>
-                </SelectContent>
-              </Select>
-              <Input
-                type="date"
-                value={filters.dataInicio}
-                onChange={(e) =>
-                  setFilters({ ...filters, dataInicio: e.target.value })
-                }
-                placeholder="Data início"
-              />
-              <div className="flex gap-2">
+          </CardHeader>
+          {showFilters && (
+            <CardContent className="border-t pt-4">
+              <div className="grid gap-4 md:grid-cols-5">
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    placeholder="Buscar..."
+                    value={filters.busca}
+                    onChange={(e) =>
+                      setFilters({ ...filters, busca: e.target.value })
+                    }
+                    className="pl-9"
+                  />
+                </div>
+                <Select
+                  value={filters.status}
+                  onValueChange={(v) => setFilters({ ...filters, status: v })}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Status" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="todos">Todos os Status</SelectItem>
+                    <SelectItem value="agendada">Agendada</SelectItem>
+                    <SelectItem value="em_andamento">Em Andamento</SelectItem>
+                    <SelectItem value="concluida">Concluída</SelectItem>
+                    <SelectItem value="cancelada">Cancelada</SelectItem>
+                  </SelectContent>
+                </Select>
+                <Select
+                  value={filters.tipo}
+                  onValueChange={(v) => setFilters({ ...filters, tipo: v })}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Tipo" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="todos">Todos os Tipos</SelectItem>
+                    <SelectItem value="presencial">Presencial</SelectItem>
+                    <SelectItem value="online">Online</SelectItem>
+                    <SelectItem value="hibrida">Híbrida</SelectItem>
+                  </SelectContent>
+                </Select>
                 <Input
                   type="date"
-                  value={filters.dataFim}
+                  value={filters.dataInicio}
                   onChange={(e) =>
-                    setFilters({ ...filters, dataFim: e.target.value })
+                    setFilters({ ...filters, dataInicio: e.target.value })
                   }
-                  placeholder="Data fim"
+                  placeholder="Data início"
                 />
-                <Button variant="ghost" size="icon" onClick={clearFilters}>
-                  <X className="h-4 w-4" />
-                </Button>
+                <div className="flex gap-2">
+                  <Input
+                    type="date"
+                    value={filters.dataFim}
+                    onChange={(e) =>
+                      setFilters({ ...filters, dataFim: e.target.value })
+                    }
+                    placeholder="Data fim"
+                  />
+                  <Button variant="ghost" size="icon" onClick={clearFilters}>
+                    <X className="h-4 w-4" />
+                  </Button>
+                </div>
               </div>
-            </div>
-          </CardContent>
-        )}
-        <CardContent>
-          {reunioesFiltradas.length === 0 ? (
-            <div className="text-center py-8 text-muted-foreground">
-              Nenhuma reunião encontrada
-            </div>
-          ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Título</TableHead>
-                  <TableHead>Data/Hora</TableHead>
-                  <TableHead>Tipo</TableHead>
-                  <TableHead>Cliente</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead className="w-[50px]"></TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {reunioesFiltradas.map((reuniao) => {
-                  const TipoIcon = tipoConfig[reuniao.tipo].icon;
-                  return (
-                    <TableRow key={reuniao.id}>
-                      <TableCell className="font-medium">
-                        {reuniao.titulo}
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-2">
-                          <Calendar className="h-4 w-4 text-muted-foreground" />
-                          {formatDate(reuniao.data)} às {reuniao.horaInicio}
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-2">
-                          <TipoIcon className="h-4 w-4 text-muted-foreground" />
-                          {tipoConfig[reuniao.tipo].label}
-                        </div>
-                      </TableCell>
-                      <TableCell>{reuniao.clienteNome || "-"}</TableCell>
-                      <TableCell>
-                        <Badge variant={statusConfig[reuniao.status].variant}>
-                          {statusConfig[reuniao.status].label}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="icon">
-                              <MoreHorizontal className="h-4 w-4" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            <DropdownMenuItem onClick={() => handleView(reuniao)}>
-                              <Eye className="h-4 w-4 mr-2" />
-                              Visualizar
-                            </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => handleEdit(reuniao)}>
-                              <Edit className="h-4 w-4 mr-2" />
-                              Editar
-                            </DropdownMenuItem>
-                            <DropdownMenuItem
-                              onClick={() => handleStatusChange(reuniao.id, "concluida")}
-                            >
-                              Marcar como Concluída
-                            </DropdownMenuItem>
-                            <DropdownMenuItem
-                              onClick={() => handleStatusChange(reuniao.id, "cancelada")}
-                              className="text-destructive"
-                            >
-                              Cancelar
-                            </DropdownMenuItem>
-                            <DropdownMenuItem
-                              onClick={() => handleDelete(reuniao.id)}
-                              className="text-destructive"
-                            >
-                              <Trash2 className="h-4 w-4 mr-2" />
-                              Excluir
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      </TableCell>
-                    </TableRow>
-                  );
-                })}
-              </TableBody>
-            </Table>
+            </CardContent>
           )}
-        </CardContent>
-      </Card>
+          <CardContent>
+            {reunioesFiltradas.length === 0 ? (
+              <div className="text-center py-8 text-muted-foreground">
+                Nenhuma reunião encontrada
+              </div>
+            ) : (
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Título</TableHead>
+                    <TableHead>Data/Hora</TableHead>
+                    <TableHead>Tipo</TableHead>
+                    <TableHead>Cliente</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead className="w-[50px]"></TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {reunioesFiltradas.map((reuniao) => {
+                    const TipoIcon = tipoConfig[reuniao.tipo].icon;
+                    return (
+                      <TableRow key={reuniao.id}>
+                        <TableCell className="font-medium">
+                          {reuniao.titulo}
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex items-center gap-2">
+                            <Calendar className="h-4 w-4 text-muted-foreground" />
+                            {formatDate(reuniao.data)} às {reuniao.horaInicio}
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex items-center gap-2">
+                            <TipoIcon className="h-4 w-4 text-muted-foreground" />
+                            {tipoConfig[reuniao.tipo].label}
+                          </div>
+                        </TableCell>
+                        <TableCell>{reuniao.clienteNome || "-"}</TableCell>
+                        <TableCell>
+                          <Badge variant={statusConfig[reuniao.status].variant}>
+                            {statusConfig[reuniao.status].label}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button variant="ghost" size="icon">
+                                <MoreHorizontal className="h-4 w-4" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                              <DropdownMenuItem onClick={() => handleView(reuniao)}>
+                                <Eye className="h-4 w-4 mr-2" />
+                                Visualizar
+                              </DropdownMenuItem>
+                              <DropdownMenuItem onClick={() => handleEdit(reuniao)}>
+                                <Edit className="h-4 w-4 mr-2" />
+                                Editar
+                              </DropdownMenuItem>
+                              <DropdownMenuItem
+                                onClick={() => handleStatusChange(reuniao.id, "concluida")}
+                              >
+                                Marcar como Concluída
+                              </DropdownMenuItem>
+                              <DropdownMenuItem
+                                onClick={() => handleStatusChange(reuniao.id, "cancelada")}
+                                className="text-destructive"
+                              >
+                                Cancelar
+                              </DropdownMenuItem>
+                              <DropdownMenuItem
+                                onClick={() => handleDelete(reuniao.id)}
+                                className="text-destructive"
+                              >
+                                <Trash2 className="h-4 w-4 mr-2" />
+                                Excluir
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
+                </TableBody>
+              </Table>
+            )}
+          </CardContent>
+        </Card>
+      )}
 
       {/* Detail Sheet */}
       <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
