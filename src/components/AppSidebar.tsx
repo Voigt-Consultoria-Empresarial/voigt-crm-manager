@@ -22,7 +22,7 @@ const menuItems = [
   { title: "Clientes", url: "/clientes", icon: Users },
   { title: "Contratos", url: "/contratos", icon: FileStack },
   { title: "Serviços", url: "/servicos", icon: Briefcase },
-  { title: "Funcionários", url: "/funcionarios", icon: UserCog },
+  { title: "Equipe", url: "/equipe", icon: UserCog },
   { title: "Carteira", url: "/carteira", icon: FolderKanban },
   { title: "Reuniões", url: "/reunioes", icon: Calendar },
   { title: "Tarefas", url: "/tarefas", icon: ListTodo },
