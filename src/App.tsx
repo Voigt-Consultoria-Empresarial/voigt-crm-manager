@@ -11,7 +11,7 @@ import Prospeccao from "./pages/Prospeccao";
 import Clientes from "./pages/Clientes";
 import Contratos from "./pages/Contratos";
 import Servicos from "./pages/Servicos";
-import Funcionarios from "./pages/Funcionarios";
+import Equipe from "./pages/Equipe";
 import Carteira from "./pages/Carteira";
 import Reunioes from "./pages/Reunioes";
 import Tarefas from "./pages/Tarefas";
@@ -52,7 +52,7 @@ const AppContent = () => {
             <Route path="/clientes" element={<Clientes />} />
             <Route path="/contratos" element={<Contratos />} />
             <Route path="/servicos" element={<Servicos />} />
-            <Route path="/funcionarios" element={<Funcionarios />} />
+            <Route path="/equipe" element={<Equipe />} />
             <Route path="/carteira" element={<Carteira />} />
             <Route path="/reunioes" element={<Reunioes />} />
             <Route path="/tarefas" element={<Tarefas />} />
