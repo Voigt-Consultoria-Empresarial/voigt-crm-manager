@@ -524,11 +524,11 @@ const Tarefas = () => {
                 onValueChange={(v) => v && setViewMode(v as "lista" | "kanban")}
                 className="bg-muted rounded-md p-1"
               >
-                <ToggleGroupItem value="lista" size="sm" className="gap-1.5 data-[state=on]:bg-background">
+                <ToggleGroupItem value="lista" size="sm" className="gap-1.5 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">
                   <LayoutList className="h-4 w-4" />
                   Lista
                 </ToggleGroupItem>
-                <ToggleGroupItem value="kanban" size="sm" className="gap-1.5 data-[state=on]:bg-background">
+                <ToggleGroupItem value="kanban" size="sm" className="gap-1.5 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">
                   <Columns3 className="h-4 w-4" />
                   Kanban
                 </ToggleGroupItem>
