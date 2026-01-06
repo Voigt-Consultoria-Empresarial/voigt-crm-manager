@@ -539,11 +539,11 @@ const Reunioes = () => {
           onValueChange={(value) => value && setViewMode(value as "lista" | "calendario")}
           className="bg-muted p-1 rounded-lg"
         >
-          <ToggleGroupItem value="lista" aria-label="Modo Lista" className="gap-2 data-[state=on]:bg-background">
+          <ToggleGroupItem value="lista" aria-label="Modo Lista" className="gap-2 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">
             <LayoutList className="h-4 w-4" />
             Lista
           </ToggleGroupItem>
-          <ToggleGroupItem value="calendario" aria-label="Modo Calendário" className="gap-2 data-[state=on]:bg-background">
+          <ToggleGroupItem value="calendario" aria-label="Modo Calendário" className="gap-2 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">
             <CalendarDays className="h-4 w-4" />
             Calendário
           </ToggleGroupItem>
