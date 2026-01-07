@@ -13,6 +13,7 @@ import Contratos from "./pages/Contratos";
 import Servicos from "./pages/Servicos";
 import Equipe from "./pages/Equipe";
 import Carteira from "./pages/Carteira";
+import Metas from "./pages/Metas";
 import Reunioes from "./pages/Reunioes";
 import Tarefas from "./pages/Tarefas";
 import Configuracoes from "./pages/Configuracoes";
@@ -54,6 +55,7 @@ const AppContent = () => {
             <Route path="/servicos" element={<Servicos />} />
             <Route path="/equipe" element={<Equipe />} />
             <Route path="/carteira" element={<Carteira />} />
+            <Route path="/metas" element={<Metas />} />
             <Route path="/reunioes" element={<Reunioes />} />
             <Route path="/tarefas" element={<Tarefas />} />
             <Route path="/configuracoes" element={<Configuracoes />} />

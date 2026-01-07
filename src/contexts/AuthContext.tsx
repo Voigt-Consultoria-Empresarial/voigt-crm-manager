@@ -5,6 +5,7 @@ interface Funcionario {
   nome: string;
   email: string;
   cargo: string;
+  isSupervisor: boolean;
 }
 
 interface AuthContextType {
@@ -16,12 +17,13 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-// Usuário teste fictício
+// Usuário teste fictício (João é supervisor)
 const USUARIO_TESTE: Funcionario = {
   id: 'func-001',
   nome: 'João Silva',
   email: 'joao@voigt.com.br',
-  cargo: 'Advogado Sênior'
+  cargo: 'Advogado Sênior',
+  isSupervisor: true,
 };
 
 const SENHA_TESTE = '123456';
