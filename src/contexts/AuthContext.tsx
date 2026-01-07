@@ -17,16 +17,29 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-// Usuário teste fictício (João é supervisor)
-const USUARIO_TESTE: Funcionario = {
-  id: 'func-001',
-  nome: 'João Silva',
-  email: 'joao@voigt.com.br',
-  cargo: 'Advogado Sênior',
-  isSupervisor: true,
+// Usuários teste fictícios
+const USUARIOS_TESTE: Record<string, { funcionario: Funcionario; senha: string }> = {
+  'joao@voigt.com.br': {
+    funcionario: {
+      id: 'func-001',
+      nome: 'João Silva',
+      email: 'joao@voigt.com.br',
+      cargo: 'Advogado Sênior',
+      isSupervisor: true,
+    },
+    senha: '123456',
+  },
+  'maria@voigt.com.br': {
+    funcionario: {
+      id: 'func-002',
+      nome: 'Maria Santos',
+      email: 'maria@voigt.com.br',
+      cargo: 'Advogada Tributarista',
+      isSupervisor: false,
+    },
+    senha: '123456',
+  },
 };
-
-const SENHA_TESTE = '123456';
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [funcionario, setFuncionario] = useState<Funcionario | null>(null);
@@ -40,9 +53,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, []);
 
   const login = async (email: string, senha: string): Promise<boolean> => {
-    if (email === USUARIO_TESTE.email && senha === SENHA_TESTE) {
-      setFuncionario(USUARIO_TESTE);
-      localStorage.setItem('auth_funcionario', JSON.stringify(USUARIO_TESTE));
+    const usuario = USUARIOS_TESTE[email];
+    if (usuario && usuario.senha === senha) {
+      setFuncionario(usuario.funcionario);
+      localStorage.setItem('auth_funcionario', JSON.stringify(usuario.funcionario));
       return true;
     }
     return false;
