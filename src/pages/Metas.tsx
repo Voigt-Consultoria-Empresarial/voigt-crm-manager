@@ -173,7 +173,7 @@ const Metas = () => {
   const [selectedMeta, setSelectedMeta] = useState<Meta | null>(null);
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [metaToDelete, setMetaToDelete] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<"minhas" | "setor" | "todas">("minhas");
+  const [activeTab, setActiveTab] = useState<"minhas" | "setor" | "equipe" | "todas">("minhas");
   const [formData, setFormData] = useState<Partial<Meta>>({
     titulo: "",
     descricao: "",
@@ -230,6 +230,11 @@ const Metas = () => {
       );
     } else if (activeTab === "setor") {
       return filtered.filter((m) => m.tipo === "setor");
+    } else if (activeTab === "equipe") {
+      // Metas individuais de outros colaboradores (só supervisor)
+      return metas.filter(
+        (m) => m.tipo === "individual" && m.colaboradorId !== funcionario?.id
+      );
     }
     
     // "todas" tab - only for supervisor
@@ -264,13 +269,15 @@ const Metas = () => {
       setEditingMeta(meta);
       setFormData({ ...meta });
     } else {
+      // Definir tipo automaticamente baseado na aba ativa
+      const tipoAutomatico = activeTab === "setor" ? "setor" : "individual";
       setEditingMeta(null);
       setFormData({
         titulo: "",
         descricao: "",
-        tipo: "individual",
-        colaboradorId: funcionario?.id,
-        setor: "",
+        tipo: tipoAutomatico,
+        colaboradorId: tipoAutomatico === "individual" ? funcionario?.id : "",
+        setor: tipoAutomatico === "setor" ? "Comercial" : "",
         valorMeta: 0,
         valorAtual: 0,
         dataInicio: new Date().toISOString().split("T")[0],
@@ -658,7 +665,8 @@ const Metas = () => {
             <TabsList>
               <TabsTrigger value="minhas">Minhas Metas</TabsTrigger>
               <TabsTrigger value="setor">Metas do Setor</TabsTrigger>
-              {isSupervisor && <TabsTrigger value="todas">Todas as Metas</TabsTrigger>}
+              {isSupervisor && <TabsTrigger value="equipe">Metas da Equipe</TabsTrigger>}
+              {isSupervisor && <TabsTrigger value="todas">Todas</TabsTrigger>}
             </TabsList>
           </Tabs>
         </CardHeader>
@@ -668,11 +676,13 @@ const Metas = () => {
               <Target className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
               <h3 className="text-lg font-medium text-foreground">Nenhuma meta encontrada</h3>
               <p className="text-muted-foreground mt-1">
-                {activeTab === "minhas"
-                  ? "Você ainda não possui metas individuais"
-                  : activeTab === "setor"
-                  ? "Não há metas de setor cadastradas"
-                  : "Nenhuma meta cadastrada no sistema"}
+                  {activeTab === "minhas"
+                    ? "Você ainda não possui metas individuais"
+                    : activeTab === "setor"
+                    ? "Não há metas de setor cadastradas"
+                    : activeTab === "equipe"
+                    ? "Nenhuma meta individual de outros colaboradores"
+                    : "Nenhuma meta cadastrada no sistema"}
               </p>
             </div>
           ) : (
@@ -681,9 +691,9 @@ const Metas = () => {
                 <TableRow>
                   <TableHead>Meta</TableHead>
                   <TableHead>Tipo</TableHead>
-                  {(activeTab === "todas" || activeTab === "setor") && (
-                    <TableHead>Colaborador/Setor</TableHead>
-                  )}
+                      {(activeTab === "todas" || activeTab === "setor" || activeTab === "equipe") && (
+                        <TableHead>Colaborador/Setor</TableHead>
+                      )}
                   <TableHead>Progresso</TableHead>
                   <TableHead>Período</TableHead>
                   <TableHead>Status</TableHead>
@@ -708,7 +718,7 @@ const Metas = () => {
                           {meta.tipo === "setor" ? "Setor" : "Individual"}
                         </Badge>
                       </TableCell>
-                      {(activeTab === "todas" || activeTab === "setor") && (
+                      {(activeTab === "todas" || activeTab === "setor" || activeTab === "equipe") && (
                         <TableCell>
                           {meta.tipo === "setor" ? meta.setor : meta.colaboradorNome}
                         </TableCell>

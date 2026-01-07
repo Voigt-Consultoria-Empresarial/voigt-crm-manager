@@ -82,10 +82,16 @@ const Auth = () => {
             <Button type="submit" className="w-full" disabled={isLoading}>
               {isLoading ? 'Entrando...' : 'Entrar'}
             </Button>
-            <div className="mt-4 p-3 bg-muted rounded-lg text-sm">
-              <p className="font-medium mb-1">Credenciais de teste:</p>
-              <p className="text-muted-foreground">Email: joao@voigt.com.br</p>
-              <p className="text-muted-foreground">Senha: 123456</p>
+            <div className="mt-4 p-3 bg-muted rounded-lg text-sm space-y-3">
+              <p className="font-medium">Credenciais de teste:</p>
+              <div className="space-y-1">
+                <p className="text-xs font-medium text-primary">Supervisor (acesso total):</p>
+                <p className="text-muted-foreground text-xs">joao@voigt.com.br / 123456</p>
+              </div>
+              <div className="space-y-1">
+                <p className="text-xs font-medium text-primary">Colaborador (acesso limitado):</p>
+                <p className="text-muted-foreground text-xs">maria@voigt.com.br / 123456</p>
+              </div>
             </div>
           </form>
         </CardContent>
