@@ -1,4 +1,4 @@
-import { Home, Users, FileText, Settings, FileStack, Briefcase, UserCog, FolderKanban, Calendar, ListTodo, LogOut, Target } from "lucide-react";
+import { Home, Users, FileText, Settings, FileStack, Briefcase, UserCog, FolderKanban, Calendar, ListTodo, LogOut, Target, UserPlus } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useLocation, useNavigate } from "react-router-dom";
 import logoVoigt from "@/assets/logo-voigt.png";
@@ -19,6 +19,7 @@ import {
 const menuItems = [
   { title: "Home", url: "/", icon: Home },
   { title: "Prospecção", url: "/prospeccao", icon: FileText },
+  { title: "Leads", url: "/leads", icon: UserPlus },
   { title: "Clientes", url: "/clientes", icon: Users },
   { title: "Contratos", url: "/contratos", icon: FileStack },
   { title: "Serviços", url: "/servicos", icon: Briefcase },
