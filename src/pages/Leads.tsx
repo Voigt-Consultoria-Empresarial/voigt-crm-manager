@@ -1114,12 +1114,12 @@ export default function Leads() {
               </div>
               <div className="space-y-2">
                 <Label>Responsável</Label>
-                <Select value={formData.responsavelId} onValueChange={(v) => setFormData(prev => ({ ...prev, responsavelId: v }))}>
+                <Select value={formData.responsavelId || "_none"} onValueChange={(v) => setFormData(prev => ({ ...prev, responsavelId: v === "_none" ? "" : v }))}>
                   <SelectTrigger>
                     <SelectValue placeholder="Selecione..." />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">Não atribuído</SelectItem>
+                    <SelectItem value="_none">Não atribuído</SelectItem>
                     {COLABORADORES.map(c => (
                       <SelectItem key={c.id} value={c.id}>{c.nome}</SelectItem>
                     ))}
