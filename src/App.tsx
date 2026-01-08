@@ -8,6 +8,7 @@ import { AppSidebar } from "@/components/AppSidebar";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import Home from "./pages/Home";
 import Prospeccao from "./pages/Prospeccao";
+import Leads from "./pages/Leads";
 import Clientes from "./pages/Clientes";
 import Contratos from "./pages/Contratos";
 import Servicos from "./pages/Servicos";
@@ -50,6 +51,7 @@ const AppContent = () => {
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/prospeccao" element={<Prospeccao />} />
+            <Route path="/leads" element={<Leads />} />
             <Route path="/clientes" element={<Clientes />} />
             <Route path="/contratos" element={<Contratos />} />
             <Route path="/servicos" element={<Servicos />} />
