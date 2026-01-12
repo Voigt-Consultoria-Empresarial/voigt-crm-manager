@@ -93,8 +93,8 @@ export function AppSidebar() {
           <LogOut className="h-4 w-4" />
           {!isCollapsed && <span className="ml-2">Sair</span>}
         </Button>
-        <p className={`text-xs text-sidebar-foreground/60 text-center transition-all mt-3 ${isCollapsed ? 'hidden' : 'block'}`}>
-          © 2025 Voigt Consultoria
+        <p className={`text-[10px] text-sidebar-foreground/50 transition-all mt-3 ${isCollapsed ? 'hidden' : 'block'}`}>
+          Tecnologia TOPSTACK
         </p>
       </SidebarFooter>
     </Sidebar>

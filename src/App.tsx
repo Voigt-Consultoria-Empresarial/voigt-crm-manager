@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
+import { AppFooter } from "@/components/AppFooter";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import Home from "./pages/Home";
 import Prospeccao from "./pages/Prospeccao";
@@ -44,27 +45,30 @@ const AppContent = () => {
     <SidebarProvider>
       <div className="flex min-h-screen w-full">
         <AppSidebar />
-        <main className="flex-1 bg-background">
+        <div className="flex flex-1 flex-col">
           <div className="sticky top-0 z-10 flex h-14 items-center border-b border-border bg-background px-4 lg:hidden">
             <SidebarTrigger />
           </div>
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/prospeccao" element={<Prospeccao />} />
-            <Route path="/leads" element={<Leads />} />
-            <Route path="/clientes" element={<Clientes />} />
-            <Route path="/contratos" element={<Contratos />} />
-            <Route path="/servicos" element={<Servicos />} />
-            <Route path="/equipe" element={<Equipe />} />
-            <Route path="/carteira" element={<Carteira />} />
-            <Route path="/metas" element={<Metas />} />
-            <Route path="/reunioes" element={<Reunioes />} />
-            <Route path="/tarefas" element={<Tarefas />} />
-            <Route path="/configuracoes" element={<Configuracoes />} />
-            <Route path="/auth" element={<Navigate to="/" />} />
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </main>
+          <main className="flex-1 bg-background">
+            <Routes>
+              <Route path="/" element={<Home />} />
+              <Route path="/prospeccao" element={<Prospeccao />} />
+              <Route path="/leads" element={<Leads />} />
+              <Route path="/clientes" element={<Clientes />} />
+              <Route path="/contratos" element={<Contratos />} />
+              <Route path="/servicos" element={<Servicos />} />
+              <Route path="/equipe" element={<Equipe />} />
+              <Route path="/carteira" element={<Carteira />} />
+              <Route path="/metas" element={<Metas />} />
+              <Route path="/reunioes" element={<Reunioes />} />
+              <Route path="/tarefas" element={<Tarefas />} />
+              <Route path="/configuracoes" element={<Configuracoes />} />
+              <Route path="/auth" element={<Navigate to="/" />} />
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </main>
+          <AppFooter />
+        </div>
       </div>
     </SidebarProvider>
   );
