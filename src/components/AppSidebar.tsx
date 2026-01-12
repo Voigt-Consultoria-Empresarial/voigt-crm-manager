@@ -1,10 +1,8 @@
-import { Home, Users, FileText, Settings, FileStack, Briefcase, UserCog, FolderKanban, Calendar, ListTodo, LogOut, Target, UserPlus } from "lucide-react";
+import { Home, Users, FileText, Settings, FileStack, Briefcase, UserCog, FolderKanban, Calendar, ListTodo, Target, UserPlus } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import logoVoigt from "@/assets/logo-voigt.png";
 import { useAuth } from "@/contexts/AuthContext";
-import { Button } from "@/components/ui/button";
-
 import {
   Sidebar,
   SidebarContent,
@@ -34,14 +32,8 @@ const menuItems = [
 export function AppSidebar() {
   const { state } = useSidebar();
   const location = useLocation();
-  const navigate = useNavigate();
-  const { logout, funcionario } = useAuth();
+  const { funcionario } = useAuth();
   const isCollapsed = state === "collapsed";
-
-  const handleLogout = () => {
-    logout();
-    navigate('/auth');
-  };
 
   return (
     <Sidebar collapsible="icon" className="border-r border-sidebar-border">
@@ -84,18 +76,14 @@ export function AppSidebar() {
             <p className="text-xs text-sidebar-foreground/60">{funcionario.cargo}</p>
           </div>
         )}
-        <Button 
-          variant="ghost" 
-          size={isCollapsed ? "icon" : "sm"}
-          onClick={handleLogout}
-          className="w-full justify-start text-sidebar-foreground hover:bg-sidebar-accent"
+        <a 
+          href="https://topstack.com.br?utm_source=voigt_crm&utm_medium=software_branding&utm_campaign=dev_by_topstack"
+          target="_blank"
+          rel="noopener noreferrer"
+          className={`text-[10px] text-sidebar-foreground/50 transition-colors hover:text-[#20D4AD] active:text-[#20D4AD] mt-3 ${isCollapsed ? 'hidden' : 'block'}`}
         >
-          <LogOut className="h-4 w-4" />
-          {!isCollapsed && <span className="ml-2">Sair</span>}
-        </Button>
-        <p className={`text-[10px] text-sidebar-foreground/50 transition-all mt-3 ${isCollapsed ? 'hidden' : 'block'}`}>
           Tecnologia TOPSTACK
-        </p>
+        </a>
       </SidebarFooter>
     </Sidebar>
   );
