@@ -148,7 +148,7 @@ const Clientes = () => {
       'ativo': 'default',
       'em_negociacao': 'secondary',
       'concluido': 'outline',
-      'cancelado': 'destructive'
+      'cancelado': 'outline'
     };
     return variants[status] || 'default';
   };
@@ -173,7 +173,7 @@ const Clientes = () => {
         <Card className="border-border">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Users className="h-5 w-5 text-accent" />
+              <Users className="h-5 w-5 text-blue-600" />
               Lista de Clientes
             </CardTitle>
             <CardDescription>
@@ -187,7 +187,7 @@ const Clientes = () => {
                 Nenhum cliente cadastrado
               </h3>
               <p className="text-muted-foreground text-sm max-w-md">
-                Converta devedores da lista de prospecção para clientes usando a opção 
+                Converta devedores da lista de prospecção para clientes usando a opção
                 "Adicionar aos Clientes" disponível na página de Prospecção.
               </p>
             </div>
@@ -197,7 +197,7 @@ const Clientes = () => {
         <Card className="border-border">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Building2 className="h-5 w-5 text-accent" />
+              <Building2 className="h-5 w-5 text-blue-500" />
               Lista de Empresas
             </CardTitle>
             <CardDescription>
@@ -375,7 +375,7 @@ const Clientes = () => {
                                   onClick={() => handleCopyPhone(selectedEmpresa.dadosReceitaWS!.telefone!)}
                                 >
                                   {copiedPhone === selectedEmpresa.dadosReceitaWS.telefone ? (
-                                    <Check className="h-4 w-4 text-green-500" />
+                                    <Check className="h-4 w-4 text-blue-500" />
                                   ) : (
                                     <Copy className="h-4 w-4" />
                                   )}
@@ -385,7 +385,7 @@ const Clientes = () => {
                                   size="sm"
                                   onClick={() => handleOpenWhatsApp(selectedEmpresa.dadosReceitaWS!.telefone!)}
                                 >
-                                  <MessageCircle className="h-4 w-4 text-green-600" />
+                                  <MessageCircle className="h-4 w-4 text-blue-600" />
                                 </Button>
                               </div>
                             </div>
@@ -497,7 +497,7 @@ const Clientes = () => {
                             {selectedEmpresa.dadosReceitaWS.situacao && (
                               <div>
                                 <label className="text-sm font-medium text-muted-foreground">Situação</label>
-                                <Badge variant={selectedEmpresa.dadosReceitaWS.situacao === 'ATIVA' ? 'default' : 'destructive'}>
+                                <Badge variant={selectedEmpresa.dadosReceitaWS.situacao === 'ATIVA' ? 'default' : 'outline'}>
                                   {selectedEmpresa.dadosReceitaWS.situacao}
                                 </Badge>
                               </div>

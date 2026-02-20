@@ -130,25 +130,25 @@ const Prospeccao = () => {
   // Função para obter ícone de situação cadastral
   const getSituacaoIcon = (situacao?: string) => {
     if (!situacao) return <span title="Não consultado"><MinusCircle className="h-4 w-4 text-muted-foreground" /></span>;
-    
+
     const situacaoLower = situacao.toLowerCase();
     if (situacaoLower === 'ativa') {
-      return <span title="Ativa"><CheckCircle className="h-4 w-4 text-green-500" /></span>;
+      return <span title="Ativa"><CheckCircle className="h-4 w-4 text-blue-600" /></span>;
     } else if (situacaoLower === 'inapta' || situacaoLower === 'suspensa') {
-      return <span title={situacao}><XCircle className="h-4 w-4 text-red-500" /></span>;
+      return <span title={situacao}><XCircle className="h-4 w-4 text-blue-900" /></span>;
     } else if (situacaoLower === 'baixada') {
-      return <span title="Baixada"><AlertCircle className="h-4 w-4 text-orange-500" /></span>;
+      return <span title="Baixada"><AlertCircle className="h-4 w-4 text-blue-400" /></span>;
     } else {
-      return <span title={situacao}><AlertCircle className="h-4 w-4 text-yellow-500" /></span>;
+      return <span title={situacao}><AlertCircle className="h-4 w-4 text-blue-300" /></span>;
     }
   };
 
   // Consulta em massa na API da Receita
   const handleBulkQuery = async () => {
-    const debtorsToQuery = selectedRows.size > 0 
+    const debtorsToQuery = selectedRows.size > 0
       ? debtors.filter(d => selectedRows.has(d.id))
       : debtors;
-    
+
     if (debtorsToQuery.length === 0) {
       toast({
         title: "Nenhum registro",
@@ -159,7 +159,7 @@ const Prospeccao = () => {
     }
 
     setBulkQueryProgress({ current: 0, total: debtorsToQuery.length, running: true });
-    
+
     toast({
       title: "Iniciando consulta em massa",
       description: `Consultando ${debtorsToQuery.length} registro(s) na Receita Federal...`,
@@ -172,10 +172,10 @@ const Prospeccao = () => {
     for (let i = 0; i < debtorsToQuery.length; i++) {
       const debtor = debtorsToQuery[i];
       const index = updatedDebtors.findIndex(d => d.id === debtor.id);
-      
+
       try {
         const cnpjLimpo = debtor.cpfCnpj.replace(/[^\d]/g, '');
-        
+
         // Verificar se é CNPJ (14 dígitos)
         if (cnpjLimpo.length !== 14) {
           updatedDebtors[index] = {
@@ -187,15 +187,15 @@ const Prospeccao = () => {
         }
 
         const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(`https://receitaws.com.br/v1/cnpj/${cnpjLimpo}`)}`;
-        
+
         const response = await fetch(proxyUrl);
-        
+
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
-        
+
         const data = await response.json();
-        
+
         if (data.status === 'ERROR') {
           updatedDebtors[index] = {
             ...updatedDebtors[index],
@@ -218,10 +218,10 @@ const Prospeccao = () => {
         };
         errorCount++;
       }
-      
+
       setBulkQueryProgress(prev => ({ ...prev, current: i + 1 }));
       setDebtors([...updatedDebtors]);
-      
+
       // Delay entre requisições para não sobrecarregar a API (1.5s)
       if (i < debtorsToQuery.length - 1) {
         await new Promise(resolve => setTimeout(resolve, 1500));
@@ -229,7 +229,7 @@ const Prospeccao = () => {
     }
 
     setBulkQueryProgress({ current: 0, total: 0, running: false });
-    
+
     toast({
       title: "Consulta em massa concluída",
       description: `${successCount} sucesso(s), ${errorCount} erro(s).`,
@@ -241,7 +241,7 @@ const Prospeccao = () => {
     const savedDebtors = localStorage.getItem("prospeccao_debtors");
     const savedMetadata = localStorage.getItem("prospeccao_metadata");
     const savedEmpresas = localStorage.getItem('clientes_empresas');
-    
+
     if (savedDebtors) {
       setDebtors(JSON.parse(savedDebtors));
     }
@@ -281,7 +281,7 @@ const Prospeccao = () => {
 
   const parseCSV = (text: string) => {
     const lines = text.split("\n");
-    
+
     // Parse metadata
     const meta: Metadata = {
       faixaValorMinimo: "",
@@ -294,14 +294,14 @@ const Prospeccao = () => {
     let dataStartIndex = 0;
     for (let i = 0; i < lines.length; i++) {
       const line = lines[i];
-      
+
       // Extract value after colon, removing quotes and extra spaces
       const extractValue = (line: string): string => {
         const colonIndex = line.indexOf(":");
         if (colonIndex === -1) return "";
         return line.substring(colonIndex + 1).replace(/"/g, "").trim();
       };
-      
+
       if (line.includes("Faixa de Valor Mínimo") || line.includes("Faixa de valor mínimo") || line.includes("Faixa de Valor M")) {
         meta.faixaValorMinimo = extractValue(line);
       } else if (line.includes("Faixa de Valor Máximo") || line.includes("Faixa de valor máximo") || line.includes("Faixa de Valor M")) {
@@ -460,7 +460,7 @@ const Prospeccao = () => {
 
   const handleBulkAddToClients = async () => {
     const selectedDebtors = debtors.filter(d => selectedRows.has(d.id));
-    
+
     toast({
       title: "Processando...",
       description: `Consultando dados de ${selectedDebtors.length} empresa(s) na Receita Federal...`,
@@ -498,7 +498,7 @@ const Prospeccao = () => {
       title: "Adicionado aos clientes",
       description: `${newEmpresas.length} empresa(s) adicionada(s) aos clientes com dados completos da Receita Federal.`,
     });
-    
+
     setSelectedRows(new Set());
   };
 
@@ -530,28 +530,28 @@ const Prospeccao = () => {
     setIsViewSheetOpen(true);
     setReceitaData(null);
     setLoadingReceita(true);
-    
+
     try {
       // Remover caracteres especiais do CNPJ
       const cnpjLimpo = debtor.cpfCnpj.replace(/[^\d]/g, '');
-      
+
       // Usando proxy CORS para contornar bloqueio do navegador
       const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(`https://receitaws.com.br/v1/cnpj/${cnpjLimpo}`)}`;
-      
+
       const response = await fetch(proxyUrl, {
         method: 'GET',
       });
-      
+
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
-      
+
       const data = await response.json();
-      
+
       if (data.status === 'ERROR') {
         throw new Error(data.message || 'Erro ao buscar dados');
       }
-      
+
       setReceitaData(data);
       toast({
         title: "Dados obtidos com sucesso",
@@ -559,7 +559,7 @@ const Prospeccao = () => {
       });
     } catch (error) {
       console.error('Erro ao buscar dados da ReceitaWS:', error);
-      
+
       toast({
         title: "Erro ao consultar Receita Federal",
         description: "Não foi possível consultar os dados. Tente novamente mais tarde.",
@@ -672,9 +672,9 @@ const Prospeccao = () => {
                 </CardDescription>
               </div>
               <div className="flex gap-2 items-center">
-                <Button 
-                  size="sm" 
-                  variant="outline" 
+                <Button
+                  size="sm"
+                  variant="outline"
                   onClick={handleBulkQuery}
                   disabled={bulkQueryProgress.running}
                 >
@@ -700,7 +700,7 @@ const Prospeccao = () => {
                 )}
               </div>
             </div>
-            
+
             {bulkQueryProgress.running && (
               <div className="mb-4 space-y-2">
                 <div className="flex items-center justify-between text-sm text-muted-foreground">
@@ -716,7 +716,7 @@ const Prospeccao = () => {
               <Table>
                 <TableHeader>
                   <TableRow className="bg-muted/50">
-                     <TableHead className="w-12">
+                    <TableHead className="w-12">
                       <Checkbox
                         checked={selectedRows.size === paginatedDebtors.length && paginatedDebtors.length > 0}
                         onCheckedChange={handleSelectAll}
@@ -743,7 +743,7 @@ const Prospeccao = () => {
                       <TableCell className="w-[180px]">
                         <div className="space-y-1">
                           {clienteCnpjs.has(debtor.cpfCnpj) && (
-                            <Badge className="bg-yellow-400 text-black hover:bg-yellow-500 text-xs px-2 py-0">
+                            <Badge className="bg-blue-600 text-white hover:bg-blue-700 text-xs px-2 py-0">
                               Cliente
                             </Badge>
                           )}
@@ -754,7 +754,7 @@ const Prospeccao = () => {
                           >
                             {debtor.cpfCnpj}
                             {copiedId === debtor.id ? (
-                              <Check className="h-3 w-3 text-green-600" />
+                              <Check className="h-3 w-3 text-blue-600" />
                             ) : (
                               <Copy className="h-3 w-3 opacity-50 group-hover:opacity-100" />
                             )}
@@ -789,11 +789,11 @@ const Prospeccao = () => {
                               });
 
                               const empresa = await convertDebtorToEmpresa(debtor, receitaData || undefined);
-                              
+
                               // Carregar empresas existentes
                               const savedEmpresas = localStorage.getItem('clientes_empresas');
                               const existingEmpresas = savedEmpresas ? JSON.parse(savedEmpresas) : [];
-                              
+
                               // Verificar duplicado
                               const exists = existingEmpresas.some((e: any) => e.cnpj === empresa.cnpj);
                               if (exists) {
@@ -804,14 +804,14 @@ const Prospeccao = () => {
                                 });
                                 return;
                               }
-                              
+
                               // Adicionar nova empresa
                               const updatedEmpresas = [...existingEmpresas, empresa];
                               localStorage.setItem('clientes_empresas', JSON.stringify(updatedEmpresas));
 
                               // Atualizar lista de CNPJs de clientes
                               setClienteCnpjs(new Set(updatedEmpresas.map((e: any) => e.cnpj)));
-                              
+
                               toast({
                                 title: "Adicionado aos clientes",
                                 description: "Empresa adicionada com sucesso com dados completos da Receita Federal.",
@@ -820,7 +820,7 @@ const Prospeccao = () => {
                               <UserPlus className="mr-2 h-4 w-4" />
                               Adicionar aos Clientes
                             </DropdownMenuItem>
-                            <DropdownMenuItem 
+                            <DropdownMenuItem
                               className="text-destructive"
                               onClick={() => {
                                 setDebtors(debtors.filter(d => d.id !== debtor.id));
@@ -909,7 +909,7 @@ const Prospeccao = () => {
                 <Button
                   onClick={async () => {
                     if (!viewingDebtor) return;
-                    
+
                     // Verificar se já é cliente
                     if (clienteCnpjs.has(viewingDebtor.cpfCnpj)) {
                       toast({
@@ -926,19 +926,19 @@ const Prospeccao = () => {
                     });
 
                     const empresa = await convertDebtorToEmpresa(viewingDebtor, receitaData || undefined);
-                    
+
                     const savedEmpresas = localStorage.getItem('clientes_empresas');
                     const existingEmpresas = savedEmpresas ? JSON.parse(savedEmpresas) : [];
                     const updatedEmpresas = [...existingEmpresas, empresa];
                     localStorage.setItem('clientes_empresas', JSON.stringify(updatedEmpresas));
-                    
+
                     setClienteCnpjs(new Set(updatedEmpresas.map((e: any) => e.cnpj)));
-                    
+
                     toast({
                       title: "Adicionado aos clientes",
                       description: "Empresa adicionada com sucesso aos clientes.",
                     });
-                    
+
                     setIsViewSheetOpen(false);
                   }}
                   className="gap-2"
@@ -1158,7 +1158,7 @@ const Prospeccao = () => {
                         <User className="h-4 w-4" />
                         Quadro Societário ({receitaData.qsa.length} {receitaData.qsa.length === 1 ? 'sócio' : 'sócios'})
                       </h3>
-                      
+
                       {/* Lista de Sócios */}
                       <div className="space-y-3">
                         {receitaData.qsa.map((socio, index) => (
@@ -1238,7 +1238,7 @@ const Prospeccao = () => {
                   )}
                 </>
               )}
-              
+
               {/* Metadados */}
               {metadata && (
                 <div className="border-t pt-4">

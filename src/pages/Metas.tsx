@@ -97,7 +97,7 @@ const SETORES = ["Comercial", "Jurídico", "Tributário", "Consultoria", "Admini
 const statusConfig: Record<string, { label: string; variant: "default" | "secondary" | "destructive" | "outline" }> = {
   ativa: { label: "Ativa", variant: "default" },
   concluida: { label: "Concluída", variant: "secondary" },
-  expirada: { label: "Expirada", variant: "destructive" },
+  expirada: { label: "Expirada", variant: "outline" },
   cancelada: { label: "Cancelada", variant: "outline" },
 };
 
@@ -236,7 +236,7 @@ const Metas = () => {
         (m) => m.tipo === "individual" && m.colaboradorId !== funcionario?.id
       );
     }
-    
+
     // "todas" tab - only for supervisor
     return isSupervisor ? filtered : [];
   }, [metas, activeTab, isSupervisor, funcionario?.id]);
@@ -247,7 +247,7 @@ const Metas = () => {
       (m) => m.tipo === "individual" && m.colaboradorId === funcionario?.id
     );
     const metasSetor = metas.filter((m) => m.tipo === "setor");
-    
+
     const progressoMedio = minhasMetas.length > 0
       ? minhasMetas.reduce((acc, m) => acc + (m.valorAtual / m.valorMeta) * 100, 0) / minhasMetas.length
       : 0;
@@ -322,10 +322,10 @@ const Metas = () => {
       const updated = metas.map((m) =>
         m.id === editingMeta.id
           ? {
-              ...m,
-              ...formData,
-              colaboradorNome: colaborador?.nome || formData.colaboradorNome,
-            } as Meta
+            ...m,
+            ...formData,
+            colaboradorNome: colaborador?.nome || formData.colaboradorNome,
+          } as Meta
           : m
       );
       saveMetas(updated);
@@ -380,10 +380,10 @@ const Metas = () => {
   };
 
   const getProgressColor = (progress: number) => {
-    if (progress >= 100) return "bg-green-500";
-    if (progress >= 75) return "bg-blue-500";
-    if (progress >= 50) return "bg-yellow-500";
-    return "bg-red-500";
+    if (progress >= 100) return "bg-blue-900";
+    if (progress >= 75) return "bg-blue-700";
+    if (progress >= 50) return "bg-blue-500";
+    return "bg-blue-300";
   };
 
   const canEditMeta = (meta: Meta) => {
@@ -617,7 +617,7 @@ const Metas = () => {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Minhas Metas</CardTitle>
-            <Target className="h-4 w-4 text-muted-foreground" />
+            <Target className="h-4 w-4 text-blue-800" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{metrics.totalMinhas}</div>
@@ -629,7 +629,7 @@ const Metas = () => {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Metas do Setor</CardTitle>
-            <Users className="h-4 w-4 text-muted-foreground" />
+            <Users className="h-4 w-4 text-blue-600" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{metrics.totalSetor}</div>
@@ -639,7 +639,7 @@ const Metas = () => {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Progresso Médio</CardTitle>
-            <TrendingUp className="h-4 w-4 text-muted-foreground" />
+            <TrendingUp className="h-4 w-4 text-blue-400" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{metrics.progressoMedio.toFixed(1)}%</div>
@@ -649,7 +649,7 @@ const Metas = () => {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Metas Concluídas</CardTitle>
-            <Award className="h-4 w-4 text-muted-foreground" />
+            <Award className="h-4 w-4 text-blue-700" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{metrics.metasConcluidas}</div>
@@ -676,13 +676,13 @@ const Metas = () => {
               <Target className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
               <h3 className="text-lg font-medium text-foreground">Nenhuma meta encontrada</h3>
               <p className="text-muted-foreground mt-1">
-                  {activeTab === "minhas"
-                    ? "Você ainda não possui metas individuais"
-                    : activeTab === "setor"
+                {activeTab === "minhas"
+                  ? "Você ainda não possui metas individuais"
+                  : activeTab === "setor"
                     ? "Não há metas de setor cadastradas"
                     : activeTab === "equipe"
-                    ? "Nenhuma meta individual de outros colaboradores"
-                    : "Nenhuma meta cadastrada no sistema"}
+                      ? "Nenhuma meta individual de outros colaboradores"
+                      : "Nenhuma meta cadastrada no sistema"}
               </p>
             </div>
           ) : (
@@ -691,9 +691,9 @@ const Metas = () => {
                 <TableRow>
                   <TableHead>Meta</TableHead>
                   <TableHead>Tipo</TableHead>
-                      {(activeTab === "todas" || activeTab === "setor" || activeTab === "equipe") && (
-                        <TableHead>Colaborador/Setor</TableHead>
-                      )}
+                  {(activeTab === "todas" || activeTab === "setor" || activeTab === "equipe") && (
+                    <TableHead>Colaborador/Setor</TableHead>
+                  )}
                   <TableHead>Progresso</TableHead>
                   <TableHead>Período</TableHead>
                   <TableHead>Status</TableHead>

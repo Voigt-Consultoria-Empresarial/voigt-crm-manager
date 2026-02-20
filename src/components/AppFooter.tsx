@@ -2,7 +2,7 @@ export function AppFooter() {
   return (
     <footer className="border-t border-border bg-background px-6 py-3">
       <div className="flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-muted-foreground">
-        <span>© 2026 Voigt Consultoria. Todos os direitos reservados.</span>
+        <span>© 2026 VM Gestão Estratégica. Todos os direitos reservados.</span>
         <span>
           Desenvolvido por{" "}
           <a

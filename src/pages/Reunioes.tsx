@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
-import { 
+import {
   Select,
   SelectContent,
   SelectItem,
@@ -39,12 +39,12 @@ import {
   ToggleGroup,
   ToggleGroupItem,
 } from "@/components/ui/toggle-group";
-import { 
-  Calendar, 
-  Plus, 
-  MoreHorizontal, 
-  Edit, 
-  Trash2, 
+import {
+  Calendar,
+  Plus,
+  MoreHorizontal,
+  Edit,
+  Trash2,
   Eye,
   Clock,
   Users,
@@ -91,7 +91,7 @@ const statusConfig: Record<string, { label: string; variant: "default" | "second
   agendada: { label: "Agendada", variant: "secondary" },
   em_andamento: { label: "Em Andamento", variant: "default" },
   concluida: { label: "Concluída", variant: "outline" },
-  cancelada: { label: "Cancelada", variant: "destructive" },
+  cancelada: { label: "Cancelada", variant: "outline" },
 };
 
 const tipoConfig: Record<string, { label: string; icon: typeof MapPin }> = {
@@ -103,7 +103,7 @@ const tipoConfig: Record<string, { label: string; icon: typeof MapPin }> = {
 const Reunioes = () => {
   const { toast } = useToast();
   const { funcionario } = useAuth();
-  
+
   const [reunioes, setReunioes] = useState<Reuniao[]>(() => {
     const saved = localStorage.getItem("reunioes");
     return saved ? JSON.parse(saved) : [];
@@ -178,10 +178,10 @@ const Reunioes = () => {
       const updated = reunioes.map((r) =>
         r.id === editingReuniao.id
           ? {
-              ...r,
-              ...formData,
-              participantes: participantesArray,
-            }
+            ...r,
+            ...formData,
+            participantes: participantesArray,
+          }
           : r
       );
       setReunioes(updated);
@@ -490,7 +490,7 @@ const Reunioes = () => {
             <CardTitle className="text-sm font-medium text-muted-foreground">
               Total
             </CardTitle>
-            <Calendar className="h-4 w-4 text-accent" />
+            <Calendar className="h-4 w-4 text-blue-600" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{stats.total}</div>
@@ -501,7 +501,7 @@ const Reunioes = () => {
             <CardTitle className="text-sm font-medium text-muted-foreground">
               Agendadas
             </CardTitle>
-            <Clock className="h-4 w-4 text-accent" />
+            <Clock className="h-4 w-4 text-blue-400" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{stats.agendadas}</div>
@@ -512,7 +512,7 @@ const Reunioes = () => {
             <CardTitle className="text-sm font-medium text-muted-foreground">
               Hoje
             </CardTitle>
-            <Calendar className="h-4 w-4 text-accent" />
+            <Calendar className="h-4 w-4 text-blue-500" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{stats.hoje}</div>
@@ -523,7 +523,7 @@ const Reunioes = () => {
             <CardTitle className="text-sm font-medium text-muted-foreground">
               Concluídas
             </CardTitle>
-            <Users className="h-4 w-4 text-accent" />
+            <Users className="h-4 w-4 text-blue-800" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{stats.concluidas}</div>

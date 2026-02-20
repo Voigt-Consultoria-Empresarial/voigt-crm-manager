@@ -1,7 +1,7 @@
 import { Home, Users, FileText, Settings, FileStack, Briefcase, UserCog, FolderKanban, Calendar, ListTodo, Target, UserPlus } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useLocation } from "react-router-dom";
-import logoVoigt from "@/assets/logo-voigt.png";
+import logoVM from "@/assets/logo-vm-3x1-sb.png";
 import { useAuth } from "@/contexts/AuthContext";
 import {
   Sidebar,
@@ -40,8 +40,8 @@ export function AppSidebar() {
       <SidebarHeader className="border-b border-sidebar-border p-4">
         <div className="flex items-center justify-center">
           <img 
-            src={logoVoigt} 
-            alt="Voigt Consultoria Empresarial" 
+            src={logoVM} 
+            alt="VM Gestão Estratégica" 
             className={`transition-all duration-300 ${isCollapsed ? 'h-8' : 'h-10'}`}
           />
         </div>
@@ -77,7 +77,7 @@ export function AppSidebar() {
           </div>
         )}
         <a 
-          href="https://topstack.com.br?utm_source=voigt_crm&utm_medium=software_branding&utm_campaign=dev_by_topstack"
+          href="https://topstack.com.br?utm_source=vm_gestao_crm&utm_medium=software_branding&utm_campaign=dev_by_topstack"
           target="_blank"
           rel="noopener noreferrer"
           className={`text-[10px] text-sidebar-foreground/50 transition-colors hover:text-[#20D4AD] active:text-[#20D4AD] mt-3 ${isCollapsed ? 'hidden' : 'block'}`}

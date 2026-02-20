@@ -19,21 +19,21 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 // Usuários teste fictícios
 const USUARIOS_TESTE: Record<string, { funcionario: Funcionario; senha: string }> = {
-  'joao@voigt.com.br': {
+  'joao@vmgestao.com.br': {
     funcionario: {
       id: 'func-001',
       nome: 'João Silva',
-      email: 'joao@voigt.com.br',
+      email: 'joao@vmgestao.com.br',
       cargo: 'Advogado Sênior',
       isSupervisor: true,
     },
     senha: '123456',
   },
-  'maria@voigt.com.br': {
+  'maria@vmgestao.com.br': {
     funcionario: {
       id: 'func-002',
       nome: 'Maria Santos',
-      email: 'maria@voigt.com.br',
+      email: 'maria@vmgestao.com.br',
       cargo: 'Advogada Tributarista',
       isSupervisor: false,
     },
@@ -68,11 +68,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   return (
-    <AuthContext.Provider value={{ 
-      funcionario, 
-      login, 
-      logout, 
-      isAuthenticated: !!funcionario 
+    <AuthContext.Provider value={{
+      funcionario,
+      login,
+      logout,
+      isAuthenticated: !!funcionario
     }}>
       {children}
     </AuthContext.Provider>

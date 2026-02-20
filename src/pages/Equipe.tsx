@@ -140,7 +140,7 @@ const DEPARTAMENTOS = [
 
 const statusConfig: Record<string, { label: string; variant: "default" | "secondary" | "destructive" | "outline" }> = {
   ativo: { label: "Ativo", variant: "default" },
-  inativo: { label: "Inativo", variant: "destructive" },
+  inativo: { label: "Inativo", variant: "outline" },
   ferias: { label: "Férias", variant: "secondary" },
 };
 
@@ -157,7 +157,7 @@ const FUNCIONARIOS_INICIAIS: Funcionario[] = [
   {
     id: "func-001",
     nome: "João Silva",
-    email: "joao@voigt.com.br",
+    email: "joao@vmgestao.com.br",
     telefone: "(11) 99999-1111",
     cargo: "Advogado Sênior",
     departamento: "Jurídico",
@@ -168,7 +168,7 @@ const FUNCIONARIOS_INICIAIS: Funcionario[] = [
   {
     id: "func-002",
     nome: "Maria Santos",
-    email: "maria@voigt.com.br",
+    email: "maria@vmgestao.com.br",
     telefone: "(11) 99999-2222",
     cargo: "Advogada Pleno",
     departamento: "Jurídico",
@@ -179,7 +179,7 @@ const FUNCIONARIOS_INICIAIS: Funcionario[] = [
   {
     id: "func-003",
     nome: "Carlos Oliveira",
-    email: "carlos@voigt.com.br",
+    email: "carlos@vmgestao.com.br",
     telefone: "(11) 99999-3333",
     cargo: "Advogado Júnior",
     departamento: "Tributário",
@@ -190,7 +190,7 @@ const FUNCIONARIOS_INICIAIS: Funcionario[] = [
   {
     id: "func-004",
     nome: "Ana Costa",
-    email: "ana@voigt.com.br",
+    email: "ana@vmgestao.com.br",
     telefone: "(11) 99999-4444",
     cargo: "Consultora",
     departamento: "Consultoria",
@@ -389,7 +389,7 @@ const Funcionarios = () => {
 
   const handleDelete = () => {
     if (!funcionarioToDelete) return;
-    
+
     const updated = funcionarios.filter((f) => f.id !== funcionarioToDelete);
     saveFuncionarios(updated);
     setDeleteConfirmOpen(false);
@@ -498,7 +498,7 @@ const Funcionarios = () => {
                       type="email"
                       value={formData.email}
                       onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                      placeholder="email@voigt.com.br"
+                      placeholder="email@vmgestao.com.br"
                     />
                   </div>
                 </div>
@@ -723,7 +723,7 @@ const Funcionarios = () => {
         <Card className="border-border">
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-              <Users className="h-4 w-4" />
+              <Users className="h-4 w-4 text-blue-600" />
               Total de Funcionários
             </CardTitle>
           </CardHeader>
@@ -739,7 +739,7 @@ const Funcionarios = () => {
         <Card className="border-border">
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-              <Briefcase className="h-4 w-4" />
+              <Briefcase className="h-4 w-4 text-blue-700" />
               Cargos
             </CardTitle>
           </CardHeader>
@@ -767,7 +767,7 @@ const Funcionarios = () => {
         <Card className="border-border">
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-              <DollarSign className="h-4 w-4" />
+              <DollarSign className="h-4 w-4 text-blue-800" />
               Valor Total
             </CardTitle>
           </CardHeader>
@@ -839,7 +839,7 @@ const Funcionarios = () => {
                       </TableCell>
                       <TableCell>
                         <div className="flex items-center gap-1">
-                          <Building2 className="h-4 w-4 text-muted-foreground" />
+                          <Building2 className="h-4 w-4 text-blue-500" />
                           <span>{clientesCount}</span>
                         </div>
                       </TableCell>

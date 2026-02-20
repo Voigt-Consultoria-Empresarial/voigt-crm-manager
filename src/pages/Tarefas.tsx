@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
-import { 
+import {
   Select,
   SelectContent,
   SelectItem,
@@ -32,11 +32,11 @@ import {
   ToggleGroup,
   ToggleGroupItem,
 } from "@/components/ui/toggle-group";
-import { 
-  Plus, 
-  MoreHorizontal, 
-  Edit, 
-  Trash2, 
+import {
+  Plus,
+  MoreHorizontal,
+  Edit,
+  Trash2,
   Eye,
   Clock,
   CheckCircle2,
@@ -81,7 +81,7 @@ const prioridadeConfig: Record<string, { label: string; variant: "default" | "se
   baixa: { label: "Baixa", variant: "secondary" },
   media: { label: "Média", variant: "outline" },
   alta: { label: "Alta", variant: "default" },
-  urgente: { label: "Urgente", variant: "destructive" },
+  urgente: { label: "Urgente", variant: "default" },
 };
 
 const statusConfig: Record<string, { label: string; icon: typeof Clock }> = {
@@ -104,7 +104,7 @@ const categorias = [
 const Tarefas = () => {
   const { toast } = useToast();
   const { funcionario } = useAuth();
-  
+
   const [tarefas, setTarefas] = useState<Tarefa[]>(() => {
     const saved = localStorage.getItem("tarefas");
     return saved ? JSON.parse(saved) : [];
@@ -167,9 +167,9 @@ const Tarefas = () => {
       const updated = tarefas.map((t) =>
         t.id === editingTarefa.id
           ? {
-              ...t,
-              ...formData,
-            }
+            ...t,
+            ...formData,
+          }
           : t
       );
       setTarefas(updated);
@@ -227,10 +227,10 @@ const Tarefas = () => {
     const updated = tarefas.map((t) =>
       t.id === id
         ? {
-            ...t,
-            status,
-            dataConclusao: status === "concluida" ? new Date().toISOString() : undefined,
-          }
+          ...t,
+          status,
+          dataConclusao: status === "concluida" ? new Date().toISOString() : undefined,
+        }
         : t
     );
     setTarefas(updated);
@@ -456,7 +456,7 @@ const Tarefas = () => {
             <CardTitle className="text-sm font-medium text-muted-foreground">
               Total
             </CardTitle>
-            <ListTodo className="h-4 w-4 text-accent" />
+            <ListTodo className="h-4 w-4 text-blue-600" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{stats.total}</div>
@@ -467,7 +467,7 @@ const Tarefas = () => {
             <CardTitle className="text-sm font-medium text-muted-foreground">
               Pendentes
             </CardTitle>
-            <Clock className="h-4 w-4 text-accent" />
+            <Clock className="h-4 w-4 text-blue-400" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{stats.pendentes}</div>
@@ -478,7 +478,7 @@ const Tarefas = () => {
             <CardTitle className="text-sm font-medium text-muted-foreground">
               Em Progresso
             </CardTitle>
-            <ListTodo className="h-4 w-4 text-accent" />
+            <ListTodo className="h-4 w-4 text-blue-500" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{stats.emProgresso}</div>
@@ -489,7 +489,7 @@ const Tarefas = () => {
             <CardTitle className="text-sm font-medium text-muted-foreground">
               Concluídas
             </CardTitle>
-            <CheckCircle2 className="h-4 w-4 text-accent" />
+            <CheckCircle2 className="h-4 w-4 text-blue-800" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{stats.concluidas}</div>
@@ -500,10 +500,10 @@ const Tarefas = () => {
             <CardTitle className="text-sm font-medium text-muted-foreground">
               Vencidas
             </CardTitle>
-            <AlertCircle className={`h-4 w-4 ${stats.vencidas > 0 ? "text-destructive" : "text-accent"}`} />
+            <AlertCircle className={`h-4 w-4 ${stats.vencidas > 0 ? "text-blue-900" : "text-blue-300"}`} />
           </CardHeader>
           <CardContent>
-            <div className={`text-2xl font-bold ${stats.vencidas > 0 ? "text-destructive" : ""}`}>
+            <div className={`text-2xl font-bold ${stats.vencidas > 0 ? "text-blue-900" : ""}`}>
               {stats.vencidas}
             </div>
           </CardContent>
@@ -518,9 +518,9 @@ const Tarefas = () => {
               <CardTitle className="text-base">
                 {viewMode === "lista" ? "Lista de Tarefas" : "Quadro Kanban"}
               </CardTitle>
-              <ToggleGroup 
-                type="single" 
-                value={viewMode} 
+              <ToggleGroup
+                type="single"
+                value={viewMode}
                 onValueChange={(v) => v && setViewMode(v as "lista" | "kanban")}
                 className="bg-muted rounded-md p-1"
               >
@@ -611,7 +611,7 @@ const Tarefas = () => {
             </div>
           </CardContent>
         )}
-        
+
         {/* List View */}
         {viewMode === "lista" && (
           <CardContent>
@@ -627,9 +627,8 @@ const Tarefas = () => {
                   return (
                     <div
                       key={tarefa.id}
-                      className={`flex items-center gap-4 p-4 rounded-lg border ${
-                        vencida ? "border-destructive bg-destructive/5" : "border-border"
-                      } ${tarefa.status === "concluida" ? "opacity-60" : ""}`}
+                      className={`flex items-center gap-4 p-4 rounded-lg border ${vencida ? "border-blue-400 bg-blue-50/50" : "border-border"
+                        } ${tarefa.status === "concluida" ? "opacity-60" : ""}`}
                     >
                       <Checkbox
                         checked={tarefa.status === "concluida"}
@@ -638,9 +637,8 @@ const Tarefas = () => {
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 flex-wrap">
                           <span
-                            className={`font-medium ${
-                              tarefa.status === "concluida" ? "line-through text-muted-foreground" : ""
-                            }`}
+                            className={`font-medium ${tarefa.status === "concluida" ? "line-through text-muted-foreground" : ""
+                              }`}
                           >
                             {tarefa.titulo}
                           </span>
@@ -651,7 +649,7 @@ const Tarefas = () => {
                             <Badge variant="outline">{tarefa.categoria}</Badge>
                           )}
                           {vencida && (
-                            <Badge variant="destructive">Vencida</Badge>
+                            <Badge variant="outline" className="border-blue-500 text-blue-600">Vencida</Badge>
                           )}
                         </div>
                         <div className="flex items-center gap-4 text-sm text-muted-foreground mt-1">

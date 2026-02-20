@@ -14,27 +14,27 @@ import { toast } from "sonner";
 
 // Mock de usuários para gestão de acesso
 const USUARIOS_MOCK = [
-  { id: 'func-001', nome: 'João Silva', email: 'joao@voigt.com.br', cargo: 'Advogado Sênior', nivelAcesso: 'supervisor' },
-  { id: 'func-002', nome: 'Maria Santos', email: 'maria@voigt.com.br', cargo: 'Advogada Tributarista', nivelAcesso: 'colaborador' },
-  { id: 'func-003', nome: 'Carlos Oliveira', email: 'carlos@voigt.com.br', cargo: 'Estagiário', nivelAcesso: 'visualizador' },
-  { id: 'func-004', nome: 'Ana Costa', email: 'ana@voigt.com.br', cargo: 'Advogada', nivelAcesso: 'colaborador' },
+  { id: 'func-001', nome: 'João Silva', email: 'joao@vmgestao.com.br', cargo: 'Advogado Sênior', nivelAcesso: 'supervisor' },
+  { id: 'func-002', nome: 'Maria Santos', email: 'maria@vmgestao.com.br', cargo: 'Advogada Tributarista', nivelAcesso: 'colaborador' },
+  { id: 'func-003', nome: 'Carlos Oliveira', email: 'carlos@vmgestao.com.br', cargo: 'Estagiário', nivelAcesso: 'visualizador' },
+  { id: 'func-004', nome: 'Ana Costa', email: 'ana@vmgestao.com.br', cargo: 'Advogada', nivelAcesso: 'colaborador' },
 ];
 
 type NivelAcesso = 'supervisor' | 'colaborador' | 'visualizador';
 
 const NIVEIS_ACESSO: Record<NivelAcesso, { label: string; cor: string; descricao: string }> = {
-  supervisor: { 
-    label: 'Supervisor', 
+  supervisor: {
+    label: 'Supervisor',
     cor: 'bg-purple-500/20 text-purple-400 border-purple-500/30',
     descricao: 'Acesso total ao sistema, incluindo gestão de equipe e metas'
   },
-  colaborador: { 
-    label: 'Colaborador', 
+  colaborador: {
+    label: 'Colaborador',
     cor: 'bg-blue-500/20 text-blue-400 border-blue-500/30',
     descricao: 'Acesso às funcionalidades operacionais e dados próprios'
   },
-  visualizador: { 
-    label: 'Visualizador', 
+  visualizador: {
+    label: 'Visualizador',
     cor: 'bg-gray-500/20 text-gray-400 border-gray-500/30',
     descricao: 'Apenas visualização de dados, sem permissão de edição'
   },
@@ -43,7 +43,7 @@ const NIVEIS_ACESSO: Record<NivelAcesso, { label: string; cor: string; descricao
 const Configuracoes = () => {
   const { logout, funcionario } = useAuth();
   const navigate = useNavigate();
-  
+
   // Estado para alteração de senha
   const [isEditingPassword, setIsEditingPassword] = useState(false);
   const [showCurrentPassword, setShowCurrentPassword] = useState(false);
@@ -52,7 +52,7 @@ const Configuracoes = () => {
   const [senhaAtual, setSenhaAtual] = useState('');
   const [novaSenha, setNovaSenha] = useState('');
   const [confirmarSenha, setConfirmarSenha] = useState('');
-  
+
   // Estado para gestão de usuários
   const [usuarios, setUsuarios] = useState(USUARIOS_MOCK);
 
@@ -74,7 +74,7 @@ const Configuracoes = () => {
       toast.error('A nova senha deve ter pelo menos 6 caracteres');
       return;
     }
-    
+
     // Simular alteração de senha
     toast.success('Senha alterada com sucesso!');
     setIsEditingPassword(false);
@@ -94,7 +94,7 @@ const Configuracoes = () => {
   };
 
   const handleChangeNivelAcesso = (userId: string, novoNivel: NivelAcesso) => {
-    setUsuarios(prev => prev.map(u => 
+    setUsuarios(prev => prev.map(u =>
       u.id === userId ? { ...u, nivelAcesso: novoNivel } : u
     ));
     toast.success('Nível de acesso atualizado!');
@@ -111,8 +111,8 @@ const Configuracoes = () => {
             Gerencie suas preferências e configurações do sistema
           </p>
         </div>
-        <Button 
-          variant="outline" 
+        <Button
+          variant="outline"
           onClick={handleLogout}
           className="text-destructive hover:text-destructive hover:bg-destructive/10"
         >

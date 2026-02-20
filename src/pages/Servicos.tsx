@@ -129,8 +129,8 @@ const Servicos = () => {
     const ativos = servicos.filter((s) => s.status === "ativo");
     const totalContratos = ativos.reduce((acc, s) => acc + s.contratosAtivos, 0);
     const valorTotal = ativos.reduce((acc, s) => acc + s.valorTotalContratado, 0);
-    const percentualMedio = ativos.length > 0 
-      ? ativos.reduce((acc, s) => acc + s.percentualTetoNegociacao, 0) / ativos.length 
+    const percentualMedio = ativos.length > 0
+      ? ativos.reduce((acc, s) => acc + s.percentualTetoNegociacao, 0) / ativos.length
       : 0;
 
     return {
@@ -171,7 +171,7 @@ const Servicos = () => {
           <AlertDialogHeader>
             <AlertDialogTitle>Funcionalidade Externa</AlertDialogTitle>
             <AlertDialogDescription>
-              A criação de novos serviços é desenvolvida em outro APP. 
+              A criação de novos serviços é desenvolvida em outro APP.
               Por favor, acesse o sistema externo para cadastrar novos serviços.
             </AlertDialogDescription>
           </AlertDialogHeader>
@@ -199,7 +199,7 @@ const Servicos = () => {
         <Card className="border-border">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total de Serviços</CardTitle>
-            <Briefcase className="h-4 w-4 text-muted-foreground" />
+            <Briefcase className="h-4 w-4 text-blue-600" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{metrics.total}</div>
@@ -209,7 +209,7 @@ const Servicos = () => {
         <Card className="border-border">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Contratos Ativos</CardTitle>
-            <FileText className="h-4 w-4 text-muted-foreground" />
+            <FileText className="h-4 w-4 text-blue-400" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-primary">{metrics.totalContratos}</div>
@@ -219,7 +219,7 @@ const Servicos = () => {
         <Card className="border-border">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Valor Total Contratado</CardTitle>
-            <TrendingUp className="h-4 w-4 text-muted-foreground" />
+            <TrendingUp className="h-4 w-4 text-blue-700" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{formatCurrency(metrics.valorTotal)}</div>
@@ -229,7 +229,7 @@ const Servicos = () => {
         <Card className="border-border">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Percentual Médio</CardTitle>
-            <Percent className="h-4 w-4 text-muted-foreground" />
+            <Percent className="h-4 w-4 text-blue-500" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-primary">{metrics.percentualMedio}%</div>

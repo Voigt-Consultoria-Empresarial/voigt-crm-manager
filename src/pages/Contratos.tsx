@@ -136,7 +136,7 @@ const statusConfig: Record<string, { label: string; variant: "default" | "second
   pendente: { label: "Pendente", variant: "outline" },
   ativo: { label: "Ativo", variant: "default" },
   concluido: { label: "Concluído", variant: "secondary" },
-  cancelado: { label: "Cancelado", variant: "destructive" },
+  cancelado: { label: "Cancelado", variant: "outline" },
 };
 
 const Contratos = () => {
@@ -179,7 +179,7 @@ const Contratos = () => {
     const ativos = contratos.filter((c) => c.status === "ativo");
     const totalHonorarios = ativos.reduce((acc, c) => acc + c.valorHonorarios, 0);
     const totalDivida = ativos.reduce((acc, c) => acc + c.valorDividaBase, 0);
-    
+
     return {
       total: contratos.length,
       ativos: ativos.length,
@@ -246,7 +246,7 @@ const Contratos = () => {
           <AlertDialogHeader>
             <AlertDialogTitle>Funcionalidade Externa</AlertDialogTitle>
             <AlertDialogDescription>
-              A criação de novos contratos é desenvolvida em outro APP. 
+              A criação de novos contratos é desenvolvida em outro APP.
               Por favor, acesse o sistema externo para cadastrar novos contratos.
             </AlertDialogDescription>
           </AlertDialogHeader>
@@ -321,7 +321,7 @@ const Contratos = () => {
         <Card className="border-border">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total de Contratos</CardTitle>
-            <FileText className="h-4 w-4 text-muted-foreground" />
+            <FileText className="h-4 w-4 text-blue-600" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{metrics.total}</div>
@@ -331,7 +331,7 @@ const Contratos = () => {
         <Card className="border-border">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Contratos Ativos</CardTitle>
-            <Building2 className="h-4 w-4 text-muted-foreground" />
+            <Building2 className="h-4 w-4 text-blue-500" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-primary">{metrics.ativos}</div>
@@ -341,7 +341,7 @@ const Contratos = () => {
         <Card className="border-border">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Valor em Dívidas</CardTitle>
-            <DollarSign className="h-4 w-4 text-muted-foreground" />
+            <DollarSign className="h-4 w-4 text-blue-700" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{formatCurrency(metrics.totalDivida)}</div>
@@ -351,7 +351,7 @@ const Contratos = () => {
         <Card className="border-border">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Honorários Projetados</CardTitle>
-            <Percent className="h-4 w-4 text-muted-foreground" />
+            <Percent className="h-4 w-4 text-blue-400" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-primary">{formatCurrency(metrics.totalHonorarios)}</div>

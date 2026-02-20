@@ -1,12 +1,12 @@
 import { useState, useMemo } from "react";
-import { 
-  Search, 
-  Filter, 
-  Plus, 
-  MoreHorizontal, 
-  Building2, 
-  Users, 
-  Phone, 
+import {
+  Search,
+  Filter,
+  Plus,
+  MoreHorizontal,
+  Building2,
+  Users,
+  Phone,
   Mail,
   Flame,
   Snowflake,
@@ -290,25 +290,25 @@ const COLABORADORES = [
 ];
 
 const temperaturaConfig: Record<LeadTemperatura, { label: string; icon: React.ReactNode; className: string }> = {
-  quente: { label: "Quente", icon: <Flame className="h-3 w-3" />, className: "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400" },
-  morno: { label: "Morno", icon: <Clock className="h-3 w-3" />, className: "bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400" },
-  frio: { label: "Frio", icon: <Snowflake className="h-3 w-3" />, className: "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400" }
+  quente: { label: "Quente", icon: <Flame className="h-3 w-3" />, className: "bg-blue-200 text-blue-800 dark:bg-blue-900/40 dark:text-blue-300" },
+  morno: { label: "Morno", icon: <Clock className="h-3 w-3" />, className: "bg-blue-100 text-blue-700 dark:bg-blue-800/30 dark:text-blue-400" },
+  frio: { label: "Frio", icon: <Snowflake className="h-3 w-3" />, className: "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400" }
 };
 
 const statusConfig: Record<LeadStatus, { label: string; className: string }> = {
-  novo: { label: "Novo", className: "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300" },
-  em_contato: { label: "Em Contato", className: "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400" },
-  qualificado: { label: "Qualificado", className: "bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400" },
-  negociando: { label: "Negociando", className: "bg-cyan-100 text-cyan-700 dark:bg-cyan-900/30 dark:text-cyan-400" },
-  convertido: { label: "Convertido", className: "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400" },
-  perdido: { label: "Perdido", className: "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400" }
+  novo: { label: "Novo", className: "bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400" },
+  em_contato: { label: "Em Contato", className: "bg-blue-100 text-blue-700 dark:bg-blue-800/30 dark:text-blue-300" },
+  qualificado: { label: "Qualificado", className: "bg-blue-200 text-blue-800 dark:bg-blue-700/40 dark:text-blue-200" },
+  negociando: { label: "Negociando", className: "bg-blue-600 text-blue-50 dark:bg-blue-600 dark:text-blue-50" },
+  convertido: { label: "Convertido", className: "bg-blue-800 text-blue-50 dark:bg-blue-800 dark:text-blue-50" },
+  perdido: { label: "Perdido", className: "bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-300" }
 };
 
 const contatoStatusConfig: Record<ContatoStatus, { label: string; icon: React.ReactNode }> = {
-  nao_contatado: { label: "Não Contatado", icon: <XCircle className="h-4 w-4 text-muted-foreground" /> },
-  tentativa: { label: "Tentativa", icon: <Clock className="h-4 w-4 text-yellow-500" /> },
-  contatado: { label: "Contatado", icon: <CheckCircle2 className="h-4 w-4 text-green-500" /> },
-  sem_resposta: { label: "Sem Resposta", icon: <XCircle className="h-4 w-4 text-red-500" /> }
+  nao_contatado: { label: "Não Contatado", icon: <XCircle className="h-4 w-4 text-slate-400" /> },
+  tentativa: { label: "Tentativa", icon: <Clock className="h-4 w-4 text-blue-400" /> },
+  contatado: { label: "Contatado", icon: <CheckCircle2 className="h-4 w-4 text-blue-600" /> },
+  sem_resposta: { label: "Sem Resposta", icon: <XCircle className="h-4 w-4 text-slate-500" /> }
 };
 
 const origemConfig: Record<LeadOrigem, { label: string; icon: React.ReactNode }> = {
@@ -355,16 +355,16 @@ export default function Leads() {
 
   const leadsFiltrados = useMemo(() => {
     return leads.filter(lead => {
-      const matchSearch = 
+      const matchSearch =
         lead.empresaNome.toLowerCase().includes(searchTerm.toLowerCase()) ||
         lead.empresaCnpj.includes(searchTerm) ||
         lead.socios.some(s => s.nome.toLowerCase().includes(searchTerm.toLowerCase()));
-      
+
       const matchTemperatura = filtroTemperatura === "todos" || lead.temperatura === filtroTemperatura;
       const matchStatus = filtroStatus === "todos" || lead.status === filtroStatus;
       const matchOrigem = filtroOrigem === "todos" || lead.origem === filtroOrigem;
       const matchContato = filtroContato === "todos" || lead.contatoStatus === filtroContato;
-      const matchResponsavel = filtroResponsavel === "todos" || 
+      const matchResponsavel = filtroResponsavel === "todos" ||
         (filtroResponsavel === "sem_responsavel" ? !lead.responsavelId : lead.responsavelId === filtroResponsavel);
 
       return matchSearch && matchTemperatura && matchStatus && matchOrigem && matchContato && matchResponsavel;
@@ -431,16 +431,16 @@ export default function Leads() {
 
   const handleSaveLead = () => {
     const responsavel = COLABORADORES.find(c => c.id === formData.responsavelId);
-    
+
     if (editingLead) {
-      setLeads(prev => prev.map(l => 
-        l.id === editingLead.id 
+      setLeads(prev => prev.map(l =>
+        l.id === editingLead.id
           ? {
-              ...l,
-              ...formData,
-              responsavelNome: responsavel?.nome,
-              valorEstimado: formData.valorEstimado ? parseFloat(formData.valorEstimado) : undefined
-            }
+            ...l,
+            ...formData,
+            responsavelNome: responsavel?.nome,
+            valorEstimado: formData.valorEstimado ? parseFloat(formData.valorEstimado) : undefined
+          }
           : l
       ));
       toast({ title: "Lead atualizado com sucesso!" });
@@ -536,7 +536,7 @@ export default function Leads() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Leads Quentes</CardTitle>
-            <Flame className="h-4 w-4 text-red-500" />
+            <Flame className="h-4 w-4 text-blue-400" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{metricas.quentes}</div>
@@ -545,7 +545,7 @@ export default function Leads() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Em Negociação</CardTitle>
-            <Clock className="h-4 w-4 text-cyan-500" />
+            <Clock className="h-4 w-4 text-blue-600" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{metricas.emNegociacao}</div>
@@ -554,7 +554,7 @@ export default function Leads() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Convertidos</CardTitle>
-            <CheckCircle2 className="h-4 w-4 text-green-500" />
+            <CheckCircle2 className="h-4 w-4 text-blue-800" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{metricas.convertidos}</div>
@@ -590,7 +590,7 @@ export default function Leads() {
                 Limpar Filtros
               </Button>
             </div>
-            
+
             <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
               <Select value={filtroTemperatura} onValueChange={(v) => { setFiltroTemperatura(v); setPaginaAtual(1); }}>
                 <SelectTrigger>
@@ -722,7 +722,7 @@ export default function Leads() {
                     <TableCell>
                       {lead.responsavelNome ? (
                         <div className="flex items-center gap-2">
-                          <UserCheck className="h-4 w-4 text-green-500" />
+                          <UserCheck className="h-4 w-4 text-blue-600" />
                           <span className="text-sm">{lead.responsavelNome}</span>
                         </div>
                       ) : (
@@ -749,7 +749,7 @@ export default function Leads() {
                             Editar
                           </DropdownMenuItem>
                           <DropdownMenuSeparator />
-                          <DropdownMenuItem 
+                          <DropdownMenuItem
                             onClick={() => handleDeleteLead(lead)}
                             className="text-destructive"
                           >
@@ -878,7 +878,7 @@ export default function Leads() {
                       <div>
                         <Label className="text-muted-foreground">Último Contato</Label>
                         <p className="mt-1">
-                          {selectedLead.dataUltimoContato 
+                          {selectedLead.dataUltimoContato
                             ? new Date(selectedLead.dataUltimoContato).toLocaleDateString("pt-BR")
                             : "Nenhum contato"}
                         </p>

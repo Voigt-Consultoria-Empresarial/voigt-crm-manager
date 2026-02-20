@@ -1,14 +1,14 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { 
-  FileText, 
-  Users, 
-  TrendingUp, 
-  DollarSign, 
-  Target, 
-  Flame, 
-  FileCheck, 
+import {
+  FileText,
+  Users,
+  TrendingUp,
+  DollarSign,
+  Target,
+  Flame,
+  FileCheck,
   Clock,
   Calendar,
   CheckCircle2,
@@ -122,20 +122,20 @@ const Home = () => {
   const stats = useMemo(() => {
     const totalClientes = clientes.length;
     const valorTotalDivida = clientes.reduce((acc, c) => acc + (c.valorDivida || 0), 0);
-    
+
     const leadsQuentes = leads.filter(l => l.temperatura === "quente").length;
     const leadsMornos = leads.filter(l => l.temperatura === "morno").length;
     const totalLeads = leads.length;
-    
+
     const metasEmAndamento = metas.filter(m => m.status === "em_andamento").length;
     const metasConcluidas = metas.filter(m => m.status === "concluida").length;
-    const progressoMetas = metas.length > 0 
+    const progressoMetas = metas.length > 0
       ? Math.round((metas.reduce((acc, m) => acc + (m.valorAtual / m.valorAlvo) * 100, 0)) / metas.length)
       : 0;
-    
+
     const contratosPendentes = contratos.filter(c => c.status === "pendente" || c.status === "em_analise").length;
     const contratosAtivos = contratos.filter(c => c.status === "ativo").length;
-    
+
     const tarefasPendentes = tarefas.filter(t => t.status === "pendente" || t.status === "em_progresso").length;
     const reunioesAgendadas = reunioes.filter(r => r.status === "agendada" || r.status === "confirmada").length;
 
@@ -198,35 +198,35 @@ const Home = () => {
       value: formatCurrency(stats.valorTotalDivida),
       icon: DollarSign,
       description: "Soma das dívidas",
-      color: "text-green-500",
+      color: "text-blue-600",
     },
     {
       title: "Leads Quentes",
       value: stats.leadsQuentes.toString(),
       icon: Flame,
       description: `${stats.totalLeads} leads no total`,
-      color: "text-orange-500",
+      color: "text-blue-400",
     },
     {
       title: "Progresso de Metas",
       value: `${stats.progressoMetas}%`,
       icon: Target,
       description: `${stats.metasConcluidas} concluídas`,
-      color: "text-purple-500",
+      color: "text-blue-700",
     },
     {
       title: "Contratos Pendentes",
       value: stats.contratosPendentes.toString(),
       icon: FileCheck,
       description: `${stats.contratosAtivos} ativos`,
-      color: "text-amber-500",
+      color: "text-blue-300",
     },
     {
       title: "Tarefas Pendentes",
       value: stats.tarefasPendentes.toString(),
       icon: Clock,
       description: "Aguardando conclusão",
-      color: "text-red-500",
+      color: "text-blue-900",
     },
   ];
 
@@ -399,43 +399,43 @@ const Home = () => {
         </CardHeader>
         <CardContent>
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-            <div className="p-4 rounded-lg bg-muted/50 border border-border">
+            <div className="p-4 rounded-lg bg-blue-50/50 border border-blue-100">
               <div className="flex items-center gap-2 text-muted-foreground mb-1">
-                <Flame className="h-4 w-4 text-orange-500" />
+                <Flame className="h-4 w-4 text-blue-400" />
                 <span className="text-xs font-medium">Leads</span>
               </div>
               <p className="text-sm">
-                <span className="font-bold text-orange-500">{stats.leadsQuentes}</span> quentes, 
-                <span className="font-bold text-yellow-500 ml-1">{stats.leadsMornos}</span> mornos
+                <span className="font-bold text-blue-500">{stats.leadsQuentes}</span> quentes,
+                <span className="font-bold text-blue-300 ml-1">{stats.leadsMornos}</span> mornos
               </p>
             </div>
-            <div className="p-4 rounded-lg bg-muted/50 border border-border">
+            <div className="p-4 rounded-lg bg-blue-50/50 border border-blue-100">
               <div className="flex items-center gap-2 text-muted-foreground mb-1">
-                <Target className="h-4 w-4 text-purple-500" />
+                <Target className="h-4 w-4 text-blue-700" />
                 <span className="text-xs font-medium">Metas</span>
               </div>
               <p className="text-sm">
-                <span className="font-bold text-purple-500">{stats.metasEmAndamento}</span> em andamento, 
-                <span className="font-bold text-green-500 ml-1">{stats.metasConcluidas}</span> concluídas
+                <span className="font-bold text-blue-700">{stats.metasEmAndamento}</span> em andamento,
+                <span className="font-bold text-blue-500 ml-1">{stats.metasConcluidas}</span> concluídas
               </p>
             </div>
-            <div className="p-4 rounded-lg bg-muted/50 border border-border">
+            <div className="p-4 rounded-lg bg-blue-50/50 border border-blue-100">
               <div className="flex items-center gap-2 text-muted-foreground mb-1">
-                <FileCheck className="h-4 w-4 text-amber-500" />
+                <FileCheck className="h-4 w-4 text-blue-600" />
                 <span className="text-xs font-medium">Contratos</span>
               </div>
               <p className="text-sm">
-                <span className="font-bold text-amber-500">{stats.contratosPendentes}</span> pendentes, 
-                <span className="font-bold text-green-500 ml-1">{stats.contratosAtivos}</span> ativos
+                <span className="font-bold text-blue-600">{stats.contratosPendentes}</span> pendentes,
+                <span className="font-bold text-blue-400 ml-1">{stats.contratosAtivos}</span> ativos
               </p>
             </div>
-            <div className="p-4 rounded-lg bg-muted/50 border border-border">
+            <div className="p-4 rounded-lg bg-blue-50/50 border border-blue-100">
               <div className="flex items-center gap-2 text-muted-foreground mb-1">
-                <Calendar className="h-4 w-4 text-blue-500" />
+                <Calendar className="h-4 w-4 text-blue-800" />
                 <span className="text-xs font-medium">Agenda</span>
               </div>
               <p className="text-sm">
-                <span className="font-bold text-blue-500">{stats.reunioesAgendadas}</span> reuniões agendadas
+                <span className="font-bold text-blue-800">{stats.reunioesAgendadas}</span> reuniões agendadas
               </p>
             </div>
           </div>

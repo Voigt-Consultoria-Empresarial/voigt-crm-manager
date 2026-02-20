@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { Building2 } from 'lucide-react';
+import logoVM from "@/assets/logo-vm-3x1-sb.png";
 
 const Auth = () => {
   const [email, setEmail] = useState('');
@@ -44,12 +45,10 @@ const Auth = () => {
       <Card className="w-full max-w-md">
         <CardHeader className="space-y-4 text-center">
           <div className="flex justify-center">
-            <div className="h-16 w-16 rounded-full bg-primary/10 flex items-center justify-center">
-              <Building2 className="h-8 w-8 text-primary" />
-            </div>
+            <img src={logoVM} alt="VM Gestão Estratégica" className="h-16 object-contain" />
           </div>
           <div>
-            <CardTitle className="text-3xl">Voigt Advocacia</CardTitle>
+            <CardTitle className="text-3xl">VM Gestão Estratégica</CardTitle>
             <CardDescription className="mt-2">
               Sistema de Gestão de Clientes
             </CardDescription>
@@ -62,7 +61,7 @@ const Auth = () => {
               <Input
                 id="email"
                 type="email"
-                placeholder="joao@voigt.com.br"
+                placeholder="joao@vmgestao.com.br"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
@@ -86,11 +85,11 @@ const Auth = () => {
               <p className="font-medium">Credenciais de teste:</p>
               <div className="space-y-1">
                 <p className="text-xs font-medium text-primary">Supervisor (acesso total):</p>
-                <p className="text-muted-foreground text-xs">joao@voigt.com.br / 123456</p>
+                <p className="text-muted-foreground text-xs">joao@vmgestao.com.br / 123456</p>
               </div>
               <div className="space-y-1">
                 <p className="text-xs font-medium text-primary">Colaborador (acesso limitado):</p>
-                <p className="text-muted-foreground text-xs">maria@voigt.com.br / 123456</p>
+                <p className="text-muted-foreground text-xs">maria@vmgestao.com.br / 123456</p>
               </div>
             </div>
           </form>

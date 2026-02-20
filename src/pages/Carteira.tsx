@@ -53,10 +53,10 @@ interface Filters {
 
 // Funcionários fictícios para demonstração
 const FUNCIONARIOS_MOCK: Funcionario[] = [
-  { id: 'func-001', nome: 'João Silva', email: 'joao@voigt.com.br', cargo: 'Advogado Sênior' },
-  { id: 'func-002', nome: 'Maria Santos', email: 'maria@voigt.com.br', cargo: 'Advogada Pleno' },
-  { id: 'func-003', nome: 'Carlos Oliveira', email: 'carlos@voigt.com.br', cargo: 'Advogado Júnior' },
-  { id: 'func-004', nome: 'Ana Costa', email: 'ana@voigt.com.br', cargo: 'Consultora' },
+  { id: 'func-001', nome: 'João Silva', email: 'joao@vmgestao.com.br', cargo: 'Advogado Sênior' },
+  { id: 'func-002', nome: 'Maria Santos', email: 'maria@vmgestao.com.br', cargo: 'Advogada Pleno' },
+  { id: 'func-003', nome: 'Carlos Oliveira', email: 'carlos@vmgestao.com.br', cargo: 'Advogado Júnior' },
+  { id: 'func-004', nome: 'Ana Costa', email: 'ana@vmgestao.com.br', cargo: 'Consultora' },
 ];
 
 const ESTAGIOS_NEGOCIACAO = [
@@ -185,7 +185,7 @@ const Carteira = () => {
 
   const handleAtribuirCliente = (empresaId: string, funcionarioId: string) => {
     const funcionarioSelecionado = funcionarios.find(f => f.id === funcionarioId);
-    
+
     const updatedEmpresas = empresas.map(emp => {
       if (emp.id === empresaId) {
         return {
@@ -287,9 +287,9 @@ const Carteira = () => {
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <Button 
-            variant={showFilters ? "default" : "outline"} 
-            size="sm" 
+          <Button
+            variant={showFilters ? "default" : "outline"}
+            size="sm"
             onClick={() => setShowFilters(!showFilters)}
           >
             <Filter className="h-4 w-4 mr-2" />
@@ -313,7 +313,7 @@ const Carteira = () => {
           <CardHeader className="pb-4">
             <div className="flex items-center justify-between">
               <CardTitle className="text-lg flex items-center gap-2">
-                <Filter className="h-5 w-5 text-primary" />
+                <Filter className="h-5 w-5 text-blue-600" />
                 Filtros de Busca
               </CardTitle>
               {hasActiveFilters && (
@@ -343,8 +343,8 @@ const Carteira = () => {
               {/* Funcionário */}
               <div>
                 <label className="text-sm font-medium text-muted-foreground mb-2 block">Funcionário</label>
-                <Select 
-                  value={filters.funcionarioId} 
+                <Select
+                  value={filters.funcionarioId}
                   onValueChange={(value) => setFilters(prev => ({ ...prev, funcionarioId: value }))}
                 >
                   <SelectTrigger>
@@ -365,8 +365,8 @@ const Carteira = () => {
               {/* Natureza da Dívida */}
               <div>
                 <label className="text-sm font-medium text-muted-foreground mb-2 block">Natureza da Dívida</label>
-                <Select 
-                  value={filters.naturezaDivida} 
+                <Select
+                  value={filters.naturezaDivida}
                   onValueChange={(value) => setFilters(prev => ({ ...prev, naturezaDivida: value }))}
                 >
                   <SelectTrigger>
@@ -408,8 +408,8 @@ const Carteira = () => {
               {/* Situação Cadastral */}
               <div>
                 <label className="text-sm font-medium text-muted-foreground mb-2 block">Situação Cadastral</label>
-                <Select 
-                  value={filters.statusReceita} 
+                <Select
+                  value={filters.statusReceita}
                   onValueChange={(value) => setFilters(prev => ({ ...prev, statusReceita: value }))}
                 >
                   <SelectTrigger>
@@ -429,8 +429,8 @@ const Carteira = () => {
               {/* Estágio de Negociação */}
               <div>
                 <label className="text-sm font-medium text-muted-foreground mb-2 block">Estágio de Negociação</label>
-                <Select 
-                  value={filters.estagioNegociacao} 
+                <Select
+                  value={filters.estagioNegociacao}
                   onValueChange={(value) => setFilters(prev => ({ ...prev, estagioNegociacao: value }))}
                 >
                   <SelectTrigger>
@@ -474,7 +474,7 @@ const Carteira = () => {
           <CardHeader className="pb-2">
             <CardDescription>Total de Clientes {hasActiveFilters && "(filtrado)"}</CardDescription>
             <CardTitle className="text-3xl flex items-center gap-2">
-              <Building2 className="h-6 w-6 text-primary" />
+              <Building2 className="h-6 w-6 text-blue-600" />
               {totalClientes}
             </CardTitle>
           </CardHeader>
@@ -483,7 +483,7 @@ const Carteira = () => {
           <CardHeader className="pb-2">
             <CardDescription>Funcionários Ativos</CardDescription>
             <CardTitle className="text-3xl flex items-center gap-2">
-              <Users className="h-6 w-6 text-primary" />
+              <Users className="h-6 w-6 text-blue-500" />
               {funcionarios.length}
             </CardTitle>
           </CardHeader>
@@ -492,7 +492,7 @@ const Carteira = () => {
           <CardHeader className="pb-2">
             <CardDescription>Valor Total em Carteira {hasActiveFilters && "(filtrado)"}</CardDescription>
             <CardTitle className="text-2xl flex items-center gap-2">
-              <DollarSign className="h-6 w-6 text-primary" />
+              <DollarSign className="h-6 w-6 text-blue-700" />
               {formatCurrency(totalValorCarteira)}
             </CardTitle>
           </CardHeader>
@@ -501,7 +501,7 @@ const Carteira = () => {
           <CardHeader className="pb-2">
             <CardDescription>Clientes Sem Atribuição</CardDescription>
             <CardTitle className="text-3xl flex items-center gap-2">
-              <TrendingUp className="h-6 w-6 text-destructive" />
+              <TrendingUp className="h-6 w-6 text-blue-400" />
               {clientesSemAtribuicao.length}
             </CardTitle>
           </CardHeader>
@@ -512,7 +512,7 @@ const Carteira = () => {
       <Card className="border-border">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Briefcase className="h-5 w-5 text-accent" />
+            <Briefcase className="h-5 w-5 text-blue-800" />
             Distribuição por Funcionário
           </CardTitle>
           <CardDescription>
@@ -553,8 +553,8 @@ const Carteira = () => {
                   </TableCell>
                   <TableCell className="w-48">
                     <div className="flex items-center gap-2">
-                      <Progress 
-                        value={(func.clientes.length / maxClientesPorFunc) * 100} 
+                      <Progress
+                        value={(func.clientes.length / maxClientesPorFunc) * 100}
                         className="h-2"
                       />
                       <span className="text-xs text-muted-foreground w-12">
